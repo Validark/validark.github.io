@@ -133,6 +133,40 @@ h4 {
 	margin-bottom: 1.5em;
 }
 
+#title {
+	margin-top: 1.5em;
+	margin-bottom: 0;
+}
+
+#title+h3 {
+	margin-top: 0.5em;
+	margin-bottom: 0;
+}
+
+a.glyphicon>h3:before,
+a.glyphicon>h3:after {
+	opacity: 0;
+	position: absolute;
+	transform: translateX(-1.15ch);
+	text-decoration: none;
+}
+
+a.glyphicon>h3:after {
+	transform: translateX(0.15ch);
+}
+
+a.glyphicon>h3:before,
+a.glyphicon>h3:after {
+	content: "*";
+	font-style: normal;
+	text-decoration: none;
+}
+
+a.glyphicon:hover>h3:before,
+a.glyphicon:hover>h3:after {
+	opacity: 1;
+}
+
 svg.header {
 	/* padding-top: 1em; */
 	margin-top: 1em;
