@@ -103,26 +103,358 @@
 			<text class="nums" x="76"
 				y="50">00<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>0000<tspan class="_1">1</tspan>00000000<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000</text>
 
-			<line x1="866" x2="949" y1="52" y2="178"
+			<line id="line1" x1="866" x2="949" y1="52" y2="178"
 				stroke="#d14" stroke-width="2" />
-			<line x1="769.75" x2="935.25" y1="52" y2="178"
+			<line id="line2" x1="769.75" x2="935.25" y1="52" y2="178"
 				stroke="black" stroke-width="2" />
-			<line x1="673.5" x2="921.5" y1="52" y2="178"
+			<line id="line3" x1="673.5" x2="921.5" y1="52" y2="178"
 				stroke="#d14" stroke-width="2" />
-			<line x1="577.25" x2="907.75" y1="52" y2="178"
+			<line id="line4" x1="577.25" x2="907.75" y1="52" y2="178"
 				stroke="black" stroke-width="2" />
-			<line x1="481" x2="894" y1="52" y2="178"
+			<line id="line5" x1="481" x2="894" y1="52" y2="178"
 				stroke="#d14" stroke-width="2" />
-			<line x1="426" x2="880.25" y1="52" y2="178"
+			<line id="line6" x1="426" x2="880.25" y1="52" y2="178"
 				stroke="black" stroke-width="2" />
-			<line x1="302.25" x2="866.5" y1="52" y2="178"
+			<line id="line7" x1="302.25" x2="866.5" y1="52" y2="178"
 				stroke="#d14" stroke-width="2" />
-			<line x1="233.5" x2="852.75" y1="52" y2="178"
+			<line id="line8" x1="233.5" x2="852.75" y1="52" y2="178"
 				stroke="black" stroke-width="2" />
-			<line x1="137.25" x2="839" y1="52" y2="178"
+			<line id="line9" x1="137.25" x2="839" y1="52" y2="178"
 				stroke="#d14" stroke-width="2" />
-			<line x1="109.75" x2="825.25" y1="52" y2="178"
+			<line id="line10" x1="109.75" x2="825.25" y1="52" y2="178"
 				stroke="black" stroke-width="2" />
+
+				<style>
+				#line1 {
+					/*stroke-dashoffset: 48;
+					stroke-dasharray: 200;*/
+					animation: line1 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line1 {
+					0% {
+						opacity: 100%;
+					}
+
+					2.5% {
+						/* stroke-dashoffset: 200; */
+						opacity: 0%;
+					}
+
+					5% {
+						opacity: 0%;
+						/* stroke-dashoffset: 200; */
+					}
+
+					12.5% {
+						/*stroke-dashoffset: 48;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 48;*/
+						opacity: 100%;
+					}
+				}
+
+				#line2 {
+					/*stroke-dashoffset: 91;
+					stroke-dasharray: 300;*/
+					animation: line2 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line2 {
+					0% {
+						opacity: 100%;
+					}
+
+					2.5% {
+						/*stroke-dashoffset: 300;*/
+						opacity: 0%;
+					}
+
+					12.5% {
+						/*stroke-dashoffset: 300;*/
+						opacity: 0%;
+					}
+
+					20% {
+						/*stroke-dashoffset: 91;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 91;*/
+						opacity: 100%;
+					}
+				}
+
+				#line3 {
+					/*stroke-dashoffset: 22;
+					stroke-dasharray: 300;*/
+
+					animation: line3 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line3 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 300;*/
+						opacity: 0%;
+					}
+
+					20% {
+						/*stroke-dashoffset: 300;*/
+						opacity: 0%;
+					}
+
+					27.5% {
+						/*stroke-dashoffset: 22;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 22;*/
+						opacity: 100%;
+					}
+				}
+
+				#line4 {
+					/*stroke-dashoffset: 467;
+					stroke-dasharray: 821;*/
+
+					animation: line4 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line4 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					27.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					35% {
+						/*stroke-dashoffset: 467;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 467;*/
+						opacity: 100%;
+					}
+				}
+
+				#line5 {
+					/*stroke-dashoffset: 388;
+					stroke-dasharray: 821;*/
+
+					animation: line5 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line5 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					35% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					42.5% {
+						/*stroke-dashoffset: 388;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 388;*/
+						opacity: 100%;
+					}
+				}
+
+				#line6 {
+					/*stroke-dashoffset: 348;
+					stroke-dasharray: 821;*/
+
+					animation: line6 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line6 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					42.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					50% {
+						/*stroke-dashoffset: 348;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 348;*/
+						opacity: 100%;
+					}
+				}
+
+				#line7 {
+					/*stroke-dashoffset: 242;
+					stroke-dasharray: 821;*/
+
+					animation: line7 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line7 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					50% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					57.5% {
+						/*stroke-dashoffset: 242;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 242;*/
+						opacity: 100%;
+					}
+				}
+
+				#line8 {
+					/*stroke-dashoffset: 188;
+					stroke-dasharray: 821;*/
+
+					animation: line8 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line8 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					57.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					65% {
+						/*stroke-dashoffset: 188;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 188;*/
+						opacity: 100%;
+					}
+				}
+
+				#line9 {
+					/*stroke-dashoffset: 107;
+					stroke-dasharray: 821;*/
+
+					animation: line9 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line9 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					65% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					72.5% {
+						/*stroke-dashoffset: 107;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 107;*/
+						opacity: 100%;
+					}
+				}
+
+				#line10 {
+					/*stroke-dashoffset: 93;
+					stroke-dasharray: 821;*/
+
+					animation: line10 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line10 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					72.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					80% {
+						/*stroke-dashoffset: 93;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 93;*/
+						opacity: 100%;
+					}
+				}
+			</style>
 
 
 
