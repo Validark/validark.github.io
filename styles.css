@@ -61,6 +61,7 @@ h4,
 	text-decoration: underline;
 	text-decoration-style: double;
 	text-decoration-thickness: 1.5pt;
+	line-height: 2;
 }
 
 h1 {
@@ -139,7 +140,7 @@ h4 {
 }
 
 #title+h3 {
-	margin-top: 0.5em;
+	margin-top: 0em;
 	margin-bottom: 0;
 }
 
