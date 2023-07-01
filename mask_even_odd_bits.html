@@ -58,10 +58,8 @@
 
 
 
-		<p>Sometimes, one wants to extract every other
-			set bit from a bitmap. We may want to isolate
-			the even bits or the odd bits. This article will
-			present implementations for both.</p>
+		<p>Sometimes, one wants to extract every other set bit from a bitmap. We may want to isolate
+			the even bits or the odd bits. This article presents implementations for both.</p>
 
 		<svg id="intro-pic" version="1.1" width="982" height="50"
 			xmlns="http://www.w3.org/2000/svg">
@@ -158,9 +156,7 @@
 
 
 <p>The <code>pdep</code> instruction is very efficient on recent x86-64 hardware. It has a latency of 3
-	cycles and you can start a new one each cycle even if there are others in-flight.
-
-Unfortunately, it's quite inefficient on AMD architectures earlier than Zen 3, and won't work on non-x86-64 architectures (although this instruction might be added to RISC-V one day). Luckily, there is another way:</p>
+	cycles and you can start a new one each cycle even if there are others in-flight. Unfortunately, it's <a target="_blank" rel="noopener noreferrer" href="https://uops.info/table.html?search=pdep&cb_lat=on&cb_tp=on&cb_uops=on&cb_ports=on&cb_ZEN2=on&cb_ZEN3=on&cb_ZEN4=on&cb_measurements=on&cb_doc=on&cb_bmi=on">quite inefficient on AMD architectures earlier than Zen 3</a>, and won't work on non-x86-64 architectures (although this instruction might be added to RISC-V one day). Luckily, there is another way:</p>
 
 <a href="#prefix-xor" class="glyphicon"><h3 id="prefix-xor">Method 2: prefix-xor</h3></a>
 
