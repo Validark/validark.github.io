@@ -40,13 +40,13 @@
 			<h1>V:/dev_blog/mask_even_odd_bits</h1>
 		</center>
 
-		<!-- <h3 id="title" style="text-align: center;">How to extract every other set bit</h3> -->
-
-		<svg style="margin-top: 1.5em;" id="title" viewBox="0 0 635 28">
-			<text class="post" x="0" y="20">How to extract every other set bit&NewLine;(June 30 2023)</text>
+		<!-- <h3 id="title" style="text-align: center; font-size: 28px;">How to extract every other set bit</h3> -->
+		<svg id="title" style="margin-top: 1.5em" id="title" viewBox="0 0 635 45">
+			<text class="post" x="0" y="20">How to extract every other set bit</text>
+			<text class="post" x="245" y="40" style="font-size: 65%">(June 30 2023)</text>
 		</svg>
+		<!-- <h4 style="text-align: center;margin-top: 0;">(June 30 2023)</h4> -->
 
-		<h4 style="text-align: center;margin-top: 0;">(June 30 2023)</h4>
 
 
 		<p>Sometimes, one wants to extract every other
@@ -66,7 +66,47 @@
 			<text x="100" y="40">0000<tspan class="_1">1</tspan>00000000000<tspan class="_1">1</tspan>000000000000<tspan class="_1">1</tspan>0000000000000<tspan class="_1">1</tspan>0000000000000<tspan class="_1">1</tspan>000000</text>
 		</svg>
 
-		<h3 id="pdep">Method 1: pdep</h3>
+		<!-- <h3 id="pdep">Method 1: pdep</h3> -->
+
+		<style>
+			/* a.glyphicon {
+				opacity: 0;
+				position: absolute;
+				transform: translateX(0.25em);
+
+				text-decoration: none;
+			}
+
+			a.glyphicon:hover {
+				opacity: 1
+			}
+
+			a.glyphicon:after {
+				content: "§";
+				font-style: normal;
+				text-decoration: none;
+			} */
+			/* a.glyphicon:after {
+				content: "§";
+				font-style: normal;
+				text-decoration: none;
+			} */
+
+			a.glyphicon > svg > text.glyphy {
+				opacity: 0;
+			}
+
+			a.glyphicon:hover > svg > text.glyphy {
+				opacity: 1;
+			}
+		</style>
+
+		<a href="#pdep" class="glyphicon glyphicon-link"><svg id="pdep" class="header" viewBox="0 0 635 20">
+			<text class="post" x="0" y="15" style="font-size: smaller">Method 1: pdep</text>
+
+			<!-- We move x to the right by 5 -->
+			<text class="post glyphy" x="191.5" y="15" style="font-size: smaller; text-decoration: none;">#</text>
+		</svg></a>
 
 		<p>On x86-64 machines, we have the <code>pdep</code>
 			instruction
