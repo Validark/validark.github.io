@@ -9,15 +9,13 @@
 
 	<link rel="preload" href="https://validark.github.io/fonts/Ysabeau_Office/static/YsabeauOffice-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous">
 
-	<link rel="preload" href="https://validark.github.io/fonts/Ysabeau_Office/static/YsabeauOffice-Medium.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-
 	<link rel="stylesheet" href="./styles.css">
 </head>
 
 <body>
 	<article>
 		<center style="display: flex;">
-			<a href="https://github.com/Validark"><img
+			<a target="_blank" rel="noopener noreferrer" href="https://github.com/Validark"><img
 					style="margin-top: 16pt; border-radius:50%; width: 100pt; height: 100pt; margin-right: 24pt; margin-top: -36pt;"
 					src="https://avatars.githubusercontent.com/u/15217173?v=4" /></a>
 			<h1>V:/dev_blog/mask_set_bits</h1>
@@ -124,7 +122,7 @@
 		</svg>
 
 
-		<p>Here is the code in <a style="text-decoration: none;" href="https://ziglang.org/">Zig</a>. Note that after <a style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/14995">#14995</a> is resolved there will be built-in support for this operation.</p>
+		<p>Here is the code in <a target="_blank" rel="noopener noreferrer"style="text-decoration: none;" href="https://ziglang.org/">Zig</a>. Note that after <a target="_blank" rel="noopener noreferrer"style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/14995">#14995</a> is resolved there will be built-in support for this operation.</p>
 
 
 
@@ -294,9 +292,9 @@ fn prefixXOR(bitstring: u64) u64 {
 
 <!-- <p style="font-size: smaller !important; margin-top: -1em; margin-bottom: -1em;">(Note we can flip the <code>&lt;&lt;</code> to <code>&gt;&gt;</code> so long as we XOR with <code>bitstring</code> at the end. One optimization we can do for <code>maskEvenSetBits</code> is omit the aforementioned XOR and bitwise AND the final value of <code>x</code> with <code>bitstring</code> to get the evenly set bits with 2 fewer operations.)</p> -->
 
-<p>Geoff Langdale came up with an even more efficient way to compute the prefix-xor <a href="https://branchfree.org/2019/03/06/code-fragment-finding-quote-pairs-with-carry-less-multiply-pclmulqdq/">here</a>. The trick is to perform a <a href="https://en.wikipedia.org/wiki/Carry-less_product">carryless multiply</a> by a bitstring of all 1's. If you think about it, this trick results in the diagram above. This is a great trick because a lot more CPU's support fast carryless multiplies since it is used in cryptography. x86-64 supports it with <code>CLMUL</code> instructions, Arm has <code>PMULL</code>, and SPARC has <code>XMULX</code>. More recent SPARC CPU's even have an <code>XMPMUL</code> instruction which takes up to 2048 bit operands!</p>
+<p>Geoff Langdale came up with an even more efficient way to compute the prefix-xor <a target="_blank" rel="noopener noreferrer" href="https://branchfree.org/2019/03/06/code-fragment-finding-quote-pairs-with-carry-less-multiply-pclmulqdq/">here</a>. The trick is to perform a <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/Carry-less_product">carryless multiply</a> by a bitstring of all 1's. If you think about it, this trick results in the diagram above. This is a great trick because a lot more CPU's support fast carryless multiplies since it is used in cryptography. x86-64 supports it with <code>CLMUL</code> instructions, Arm has <code>PMULL</code>, and SPARC has <code>XMULX</code>. More recent SPARC CPU's even have an <code>XMPMUL</code> instruction which takes up to 2048 bit operands!</p>
 
-<p>Once Zig gets a <code>@mulCarryless</code> builtin (<a style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/9631">#9631</a>), we can implement this function like so:</p>
+<p>Once Zig gets a <code>@mulCarryless</code> builtin (<a target="_blank" rel="noopener noreferrer"style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/9631">#9631</a>), we can implement this function like so:</p>
 
 <pre>
 fn prefixXOR(bitmask: u64) u64 {
@@ -304,10 +302,10 @@ fn prefixXOR(bitmask: u64) u64 {
 }
 </pre>
 
-<p>If you would like a temporary Zig implementation that uses inline assembly, I have one <a href="https://github.com/Validark/DynSDT/blob/4d31c8be4f3ef48834394c22695fd1b01a83a53c/zig/src/main.zig#L135-L177">here</a>.</p>
+<p>If you would like a temporary Zig implementation that uses inline assembly, I have one <a target="_blank" rel="noopener noreferrer" href="https://github.com/Validark/DynSDT/blob/4d31c8be4f3ef48834394c22695fd1b01a83a53c/zig/src/main.zig#L135-L177">here</a>.</p>
 
 
-<p>One final note. If you are on hardware that does not support carryless multiply instructions, you may eliminate the bitwise NOT instruction in <code>maskEvenSetBits</code> by finding the <code>suffixXOR</code> instead. This <a href="https://godbolt.org/#z:OYLghAFBqd5QCxAYwPYBMCmBRdBLAF1QCcAaPECAMzwBtMA7AQwFtMQByARg9KtQYEAysib0QXACx8BBAKoBnTAAUAHpwAMvAFYTStJg1AAvPMFJL6yAngGVG6AMKpaAVxYMQAZi%2BkHAGTwGTAA5dwAjTGIQACYADlIAB1QFQlsGZzcPb19k1JsBQOCwlkjo%2BItMKwKGIQImYgJM908fSur0uoaCItCIqNiEhXrG5uy24e7ekrLBgEoLVFdiZHYOKgYAakTiTBpVAA0AeQAlCHDCYeIg0E3XADZJObvHzYBSAHYAITeNAEFNoDNgA3BqbVTvLwAEU2FwIVxuby8P3%2BQPB7wArNgkTCIUjHPjNlwkSiAUC8Vicej8YSYiTfmTARTsdDqV4CezNpJ6ajyZiWbjIRzHJs4jzGdTKay8ezCVx7uK0cyqTLhZsvHTkQy0bsCMstqpxZ8oQyGRtNgpXFR9scznCEUYQC8ns73t9tUDQcQ2TD7QRrkZFXy3lLBUiWdgiUGmfyVZCI5tNaSlbHpfHw1zo5KBWyE2KtbyYyGczKE/Ks8q0%2BGMxqs7r9eCjR8Tf8GZhVMlGptzSwmAoANbYYGMISYAhfS7nS7%2Bm5Oh4u%2Bdu5NA%2BvELZ%2BgPAd4xe6bAB%2BOz2eEOpyn8JnRjmTZbfzbHZIBG7W17A6HI7HE/hMTPDtu8%2Bei6fMugKruu06btuu6Wtax62j%2BF7AFeBa3s2HALLQnAYrwngcFopCoJwABaZgWksKyYNuXg8KQBCaGhCz9iAGIaPonCSNhdH4ZwvAKCALG0bhaGkHAsAwIgKCoCwiR0FE5CUGgUkydExj%2Bq4DD9qQWDAngqwAGp4JgADuRyJIwnDUTQtAEFEvHnJxFzMMQACe5m8A5DROUc4TaJg1iuaQClsIIRwMLQLmCZpmDhK4wCOGItC8dwvBYL2RjiBF%2BC7NYeDDoleHtr5rjWf5QTWRhEW0Hg4TEB5zhYJxM4sK5CxUAYwAKPpRkmWZSUyIIIhiOwUh9fIShqJxuhcPohgmGY%2BhVbxkALKgiQ1IlAC0RybCcVSYH2mAAGJ9o%2B60jMAY6bEwDTIAgjzrZVDCuKovCoMOxDXFgi0QAsli%2BTU9gME4LgtHoARBH0pQDFNeRpAIYyeNDKSwww0z9NEU2/dlAhdKMwPZBju1Y7UIw9ODMxQxYJPw3okyNKjkPoz9ZGrBI6GYRxEUERwmymFuqnqZsEC4IQJCUVwcy8AJWhzAxTEseV7GkE1kgaAAdJIACcGIxBoHz3PcHwfFR9xeNIOF4VzPF8TRdELCJ4kKdJ9BkBQECO0pIAqcQakaVpOmYJ1xmmThFl0NZxC2eE9lBB5/nuc5Xk%2BX5vWBYwBAhWFnFYNFsXxYl1EpTN6V4Zlf05ZgeW8AVyBFWs1GlVUnGVdVtUYGseGNc1fBtR1BlBz1FmyAN4jDfwgiKCo6gRboMTTY6vPzeEX3Lat6QbVtO30PtR3DC9b0fRX8A/YT/0QA41NTWDxRo3oMM1BfSRIzU9OzATHTY1TeMI%2B0Zcf1MZM3wxp/LI39aak2vgzVmixlgs3FqxDgWFSDmxepwHmJF%2Bb9kFsLIg3o3gxCohLG2gkZakAQHtLA0RvrwMVk1DEGtVbMUkB8DW%2BCNQ7jiF4D4SDOKWwsNbKW9FSCMWYvArwHMLbcSIdLNmHAYjiJQRwSWtsFhvVSHYSQQA">appears to not be worth it on x86-64 and ARM64</a>, but may be a win on other architectures.</p>
+<p>One final note. If you are on hardware that does not support carryless multiply instructions, you may eliminate the bitwise NOT instruction in <code>maskEvenSetBits</code> by finding the <code>suffixXOR</code> instead. This <a target="_blank" rel="noopener noreferrer" href="https://godbolt.org/#z:OYLghAFBqd5QCxAYwPYBMCmBRdBLAF1QCcAaPECAMzwBtMA7AQwFtMQByARg9KtQYEAysib0QXACx8BBAKoBnTAAUAHpwAMvAFYTStJg1AAvPMFJL6yAngGVG6AMKpaAVxYMQAZi%2BkHAGTwGTAA5dwAjTGIQACYADlIAB1QFQlsGZzcPb19k1JsBQOCwlkjo%2BItMKwKGIQImYgJM908fSur0uoaCItCIqNiEhXrG5uy24e7ekrLBgEoLVFdiZHYOKgYAakTiTBpVAA0AeQAlCHDCYeIg0E3XADZJObvHzYBSAHYAITeNAEFNoDNgA3BqbVTvLwAEU2FwIVxuby8P3%2BQPB7wArNgkTCIUjHPjNlwkSiAUC8Vicej8YSYiTfmTARTsdDqV4CezNpJ6ajyZiWbjIRzHJs4jzGdTKay8ezCVx7uK0cyqTLhZsvHTkQy0bsCMstqpxZ8oQyGRtNgpXFR9scznCEUYQC8ns73t9tUDQcQ2TD7QRrkZFXy3lLBUiWdgiUGmfyVZCI5tNaSlbHpfHw1zo5KBWyE2KtbyYyGczKE/Ks8q0%2BGMxqs7r9eCjR8Tf8GZhVMlGptzSwmAoANbYYGMISYAhfS7nS7%2Bm5Oh4u%2Bdu5NA%2BvELZ%2BgPAd4xe6bAB%2BOz2eEOpyn8JnRjmTZbfzbHZIBG7W17A6HI7HE/hMTPDtu8%2Bei6fMugKruu06btuu6Wtax62j%2BF7AFeBa3s2HALLQnAYrwngcFopCoJwABaZgWksKyYNuXg8KQBCaGhCz9iAGIaPonCSNhdH4ZwvAKCALG0bhaGkHAsAwIgKCoCwiR0FE5CUGgUkydExj%2Bq4DD9qQWDAngqwAGp4JgADuRyJIwnDUTQtAEFEvHnJxFzMMQACe5m8A5DROUc4TaJg1iuaQClsIIRwMLQLmCZpmDhK4wCOGItC8dwvBYL2RjiBF%2BC7NYeDDoleHtr5rjWf5QTWRhEW0Hg4TEB5zhYJxM4sK5CxUAYwAKPpRkmWZSUyIIIhiOwUh9fIShqJxuhcPohgmGY%2BhVbxkALKgiQ1IlAC0RybCcVSYH2mAAGJ9o%2B60jMAY6bEwDTIAgjzrZVDCuKovCoMOxDXFgi0QAsli%2BTU9gME4LgtHoARBH0pQDFNeRpAIYyeNDKSwww0z9NEU2/dlAhdKMwPZBju1Y7UIw9ODMxQxYJPw3okyNKjkPoz9ZGrBI6GYRxEUERwmymFuqnqZsEC4IQJCUVwcy8AJWhzAxTEseV7GkE1kgaAAdJIACcGIxBoHz3PcHwfFR9xeNIOF4VzPF8TRdELCJ4kKdJ9BkBQECO0pIAqcQakaVpOmYJ1xmmThFl0NZxC2eE9lBB5/nuc5Xk%2BX5vWBYwBAhWFnFYNFsXxYl1EpTN6V4Zlf05ZgeW8AVyBFWs1GlVUnGVdVtUYGseGNc1fBtR1BlBz1FmyAN4jDfwgiKCo6gRboMTTY6vPzeEX3Lat6QbVtO30PtR3DC9b0fRX8A/YT/0QA41NTWDxRo3oMM1BfSRIzU9OzATHTY1TeMI%2B0Zcf1MZM3wxp/LI39aak2vgzVmixlgs3FqxDgWFSDmxepwHmJF%2Bb9kFsLIg3o3gxCohLG2gkZakAQHtLA0RvrwMVk1DEGtVbMUkB8DW%2BCNQ7jiF4D4SDOKWwsNbKW9FSCMWYvArwHMLbcSIdLNmHAYjiJQRwSWtsFhvVSHYSQQA">appears to not be worth it on x86-64 and ARM64</a>, but may be a win on other architectures.</p>
 
 <pre>
 fn suffixXOR(bitstring: u64) u64 {
