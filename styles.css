@@ -47,6 +47,7 @@ article {
 	/* max-width: 45em; */
 	margin: 0 auto 0 auto;
 	margin-top: 2em;
+	margin-bottom: 2em;
 	outline-width: 4pt;
 
 	background-color: rgb(255, 255, 255);
