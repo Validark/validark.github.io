@@ -45,9 +45,7 @@ article {
 	padding-bottom: 2cm;
 
 	/* max-width: 45em; */
-	margin: 0 auto 0 auto;
-	margin-top: 2em;
-	margin-bottom: 2em;
+	margin: 1em auto 1em auto;
 	outline-width: 4pt;
 
 	background-color: rgb(255, 255, 255);
@@ -57,6 +55,7 @@ article {
 h1,
 h2,
 h3,
+h4,
 .post {
 	font-family: 'Press Start 2P', cursive;
 	text-decoration: underline;
@@ -75,6 +74,10 @@ h2 {
 
 h3 {
 	font-size: 14pt;
+}
+
+h4 {
+	font-size: 12pt;
 }
 
 div,
@@ -105,7 +108,8 @@ img {
 a,
 h1,
 h2,
-h3 {
+h3,
+h4 {
 	color: black;
 }
 
@@ -124,7 +128,8 @@ p {
 p,
 /* svg, */
 pre,
-h3 {
+h3,
+h4 {
 	margin-top: 1.5em;
 	margin-bottom: 1.5em;
 }
