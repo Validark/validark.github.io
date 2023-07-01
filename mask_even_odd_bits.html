@@ -28,6 +28,15 @@
 		svg#prefix-xor text {
 			font-size: 16pt;
 		}
+
+		text.num2, text.xor {
+			font-family: "JetBrains Mono", monospace;
+			font-size: 9pt;
+		}
+
+		text.xor {
+			font-size: 8pt;
+		}
 	</style>
 </head>
 
@@ -37,7 +46,7 @@
 			<a target="_blank" rel="noopener noreferrer" href="https://github.com/Validark"><img
 					style="margin-top: 16pt; border-radius:50%; width: 100pt; height: 100pt; margin-right: 24pt; margin-top: -36pt;"
 					src="https://avatars.githubusercontent.com/u/15217173?v=4" /></a>
-			<h1>V:/dev_blog/mask_even_odd_bits</h1>
+			<h1><a style="text-decoration: none;" href="./index.html">V:/dev</a><a style="text-decoration: none;">/mask_even_odd_bits</a></h1>
 		</center>
 
 		<h2 id="title" style="text-align: center;">How to extract every other set bit</h3>
@@ -130,20 +139,20 @@
 
 
 		<pre>
-fn pdep(src: u64, mask: u64) u64 {
-    return asm ("pdep %[mask], %[src], %[ret]"
-        : [ret] "=r" (-> u64),
-        : [src] "r" (src),
-          [mask] "r" (mask),
+<span style="font-weight:bold">fn</span> pdep(src: <span class="code-type">u64</span>, mask: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span style="font-weight:bold">return</span> asm (<span class="code-str">"pdep %[mask], %[src], %[ret]"</span>
+        : [ret] <span class="code-str">"=r"</span> (-> <span class="code-type">u64</span>),
+        : [src] <span class="code-str">"r"</span> (src),
+          [mask] <span class="code-str">"r"</span> (mask),
     );
 }
 
-fn maskOddSetBits(bitstring: u64) u64 {
-    return pdep(0b0101010101010101010101010101010101010101010101010101010101010101, bitstring);
+<span style="font-weight:bold">fn</span> maskOddSetBits(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span style="font-weight:bold">return</span> pdep(<span class="code-num">0b0101010101010101010101010101010101010101010101010101010101010101</span>, bitstring);
 }
 
-fn maskEvenSetBits(bitstring: u64) u64 {
-    return pdep(0b1010101010101010101010101010101010101010101010101010101010101010, bitstring);
+<span style="font-weight:bold">fn</span> maskEvenSetBits(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span style="font-weight:bold">return</span> pdep(<span class="code-num">0b1010101010101010101010101010101010101010101010101010101010101010</span>, bitstring);
 }
 </pre>
 
@@ -157,20 +166,7 @@ Unfortunately, it's quite inefficient on AMD architectures earlier than Zen 3, a
 
 <p>The prefix-xor operation takes a bitstring and sets each bit to the XOR of all the bits to its right (and itself).</p>
 
-<svg version="1.1" width="982" height="792"
-			xmlns="http://www.w3.org/2000/svg">
-
-			<style>
-				text.num2, text.xor {
-					font-family: "JetBrains Mono", monospace;
-					font-size: 9pt;
-				}
-
-				text.xor {
-					font-size: 8pt;
-				}
-			</style>
-
+<svg version="1.1" width="982" height="792" xmlns="http://www.w3.org/2000/svg">
 			<!-- <rect x="1" y="1" width="980" height="790"
 				stroke="black" fill="transparent"
 				stroke-width="2" /> -->
@@ -261,39 +257,39 @@ xmlns="http://www.w3.org/2000/svg">
 <p>Armed with this operation, we simply do a bitwise AND of the bitstring together with its prefix-xor to get a mask of every other set bit.</p>
 
 <pre>
-fn maskOddSetBits(bitstring: u64) u64 {
-    return bitstring & prefixXOR(bitstring);
+<span style="font-weight:bold">fn</span> maskOddSetBits(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span style="font-weight:bold">return</span> bitstring & prefixXOR(bitstring);
 }
 
-fn maskEvenSetBits(bitstring: u64) u64 {
-    return bitstring & ~prefixXOR(bitstring);
+<span style="font-weight:bold">fn</span> maskEvenSetBits(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span style="font-weight:bold">return</span> bitstring & ~prefixXOR(bitstring);
 }
 </pre>
 
 <p>The <code>prefixXOR</code> function is naïvely implemented as follows:</p>
 
 <pre>
-fn prefixXOR(bitstring: u64) u64 {
-    var x = bitstring;
-    inline for (0..64) |i| { // i ∈ [0, 63]
+<span style="font-weight:bold">fn</span> prefixXOR(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span style="font-weight:bold">var</span> x = bitstring;
+    <span style="font-weight:bold">inline</span> <span style="font-weight:bold">for</span> (<span class="code-num">0</span>..<span class="code-num">64</span>) |i| { <span class="code-comment">// i ∈ [0, 63]</span>
         x ^= mask << i;
     }
-    return x;
+    <span style="font-weight:bold">return</span> x;
 }
 </pre>
 
 <p>However, we can save on operations by taking advantage of how XOR's stack:</p>
 
 <pre>
-fn prefixXOR(bitstring: u64) u64 {
-    var x = bitstring;
-    x ^= x << 1;
-    x ^= x << 2;
-    x ^= x << 4;
-    x ^= x << 8;
-    x ^= x << 16;
-    x ^= x << 32;
-    return x;
+<span style="font-weight:bold">fn</span> prefixXOR(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span style="font-weight:bold">var</span> x = bitstring;
+    x ^= x << <span class="code-num">1</span>;
+    x ^= x << <span class="code-num">2</span>;
+    x ^= x << <span class="code-num">4</span>;
+    x ^= x << <span class="code-num">8</span>;
+    x ^= x << <span class="code-num">16</span>;
+    x ^= x << <span class="code-num">32</span>;
+    <span style="font-weight:bold">return</span> x;
 }
 </pre>
 
@@ -304,8 +300,8 @@ fn prefixXOR(bitstring: u64) u64 {
 <p>Once Zig gets a <code>@mulCarryless</code> builtin (<a target="_blank" rel="noopener noreferrer"style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/9631">#9631</a>), we can implement this function like so:</p>
 
 <pre>
-fn prefixXOR(bitmask: u64) u64 {
-    return @mulCarryless(bitmask, @bitCast(@as(i64, -1)));
+<span style="font-weight:bold">fn</span> prefixXOR(bitmask: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span style="font-weight:bold">return</span> <span class="code-builtin">@mulCarryless</span>(bitmask, <span class="code-builtin">@bitCast</span>(<span class="code-builtin">@as</span>(<span style="font-weight:bold">i64</span>, <span class="code-num">-1</span>)));
 }
 </pre>
 
@@ -317,27 +313,27 @@ fn prefixXOR(bitmask: u64) u64 {
 <p>Another potential optimization is eliminating the bitwise negation in <code>maskEvenSetBits</code> by finding the suffix-xor instead.</p>
 
 <pre>
-fn suffixXOR(bitstring: u64) u64 {
-    var x = bitstring;
-    x ^= x >> 1;
-    x ^= x >> 2;
-    x ^= x >> 4;
-    x ^= x >> 8;
-    x ^= x >> 16;
-    x ^= x >> 32;
-    return x;
+<span style="font-weight:bold">fn</span> suffixXOR(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span style="font-weight:bold">var</span> x = bitstring;
+    x ^= x >> <span class="code-num">1</span>;
+    x ^= x >> <span class="code-num">2</span>;
+    x ^= x >> <span class="code-num">4</span>;
+    x ^= x >> <span class="code-num">8</span>;
+    x ^= x >> <span class="code-num">16</span>;
+    x ^= x >> <span class="code-num">32</span>;
+    <span style="font-weight:bold">return</span> x;
 }
 
-fn maskEvenSetBits(bitstring: u64) u64 {
-    return bitstring & suffixXOR(bitstring);
+<span style="font-weight:bold">fn</span> maskEvenSetBits(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span style="font-weight:bold">return</span> bitstring & suffixXOR(bitstring);
 }
 </pre>
 
 <p><code>suffixXOR(bitstring)</code> turns out to be equivalent to <code>bitstring ^ prefixXOR(bitstring)</code>, so we can use the carryless multiply trick again. Because <code>prefixXOR(bitstring)</code> is equal to <code>bitstring ^ (bitstring << 1) ^ (bitstring << 2) ^ (bitstring << 3) ^ etc...</code>, we can find the suffix-xor by simply removing the first XOR. To do this in a carryless multiply by all ones, we simply zero out the lowest bit. I.e. <code>-1 ^ 1 => -2</code></p>
 
 <pre>
-fn suffixXOR(bitstring: u64) u64 {
-    return @mulCarryless(bitmask, @bitCast(@as(i64, -2)));
+<span style="font-weight:bold">fn</span> suffixXOR(bitmask: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span style="font-weight:bold">return</span> <span class="code-builtin">@mulCarryless</span>(bitmask, <span class="code-builtin">@bitCast</span>(<span class="code-builtin">@as</span>(<span style="font-weight:bold">i64</span>, <span class="code-num">-2</span>)));
 }
 </pre>
 
@@ -348,8 +344,8 @@ fn suffixXOR(bitstring: u64) u64 {
 <p>Incidentally, the suffix-xor algorithm is used to decode <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/Gray_code#Converting_to_and_from_Gray_code">Gray codes</a> too. Depending on the machine and use case, <a target="_blank" rel="noopener noreferrer" href="https://godbolt.org/#z:OYLghAFBqd5QCxAYwPYBMCmBRdBLAF1QCcAaPECAMzwBtMA7AQwFtMQByARg9KtQYEAysib0QXACx8BBAKoBnTAAUAHpwAMvAFYTStJg1AAvPMFJL6yAngGVG6AMKpaAVxYMQAJlIOAMngMmABy7gBGmMQgAJzSAA6oCoS2DM5uHt6kCUk2AgFBoSwRUbEWmFa5DEIETMQEae6eXGUVKdW1BPkh4ZF6CjV1DRnN/R1dhcUSAJQWqK7EyOwcaAz9ANT96GsApADMACJrAAJ4LAl1ENteXptXXlN7AELbGgCCK%2BthrnQ2DDsHx1O5wIl2uXx%2BgTuD12zzeL1eVD%2BcWImBoqgAGgB5ABKEDChBYTAUAGsQGtDABPAgUuKYKbHAAqNMwmKoeIJROJ9O2AHZYa81oK1mgzjY2BsCOgAHRYL7AKVEpQXTZSwkEBBSvAKZSoADukVZDN1qAgR3xwjwxhZbKOTNprPZBEJJKmruh/PhQuFAnWCCJAH1mDYAG6Yf2iYjECn0BQKf0sVy0GxxWgU/6HM2EISW62mu2583Ornc3aOPaHABsknJDC2Cl1hGQCDWeO%2BScCUuQcVcCoWCG5fM9XqFAHoR2sGQhIpgNgg5rQthE1gxUBtXE21urAsA1g31eS1sjUItYyQ13FgdvycHVGsvgRl6gH8haAnaFKh8O1lLVAAOCv%2BlW6Z7NgErSgytTAJgBA/v%2BUpUJgTAEPMmBCNBAASRKthCDCdt28GIchKIKKQ35xC%2Bb70oY6Cfl%2BQoqhBxBQTBf4VgRSEoWhBCYQo2HtrhXY9ghHHEaRCo3vcpC0V6Cq1E2QHliBYFSoxzGyX2VbsURqEYVh4L8XhQmEShJHfkwmAKDM0lCuUSjAbsoFUGIShSW8Xq8vsTzwrReBUC2JypKgoqnJgED0meYBgH6cZBngobhrUUYxnGb7JqmA78nRazBrUay3uWd4ciSXluXRgS0IEM78MQLYaFKUqmua2ZWg6KpqhqfioMAXgAJKCHmzIOoWnJuq6Ow8o4eC8mWpVZYK%2BUAKzYAV%2BWlnsjjesF4oQFw/xlqWax4O61mCiiRF/KoJUCkKHnebNaxjms6CrkwwqJdGFkKGsqV4CmaZhGmYi0GsXBgBwJG0Y9TDoEwcQEJgWxUMQQVrKYwAjhVYQjpsI7IFGcOoCOwDRQg/oJKmOXvmjtEfA%2Bq0ZlhrhcF4v6kZm9REiC2wLY8Xjc/srhVryjzHIzVakcNLqkRo437K6V1erTaxpgVRyM8zrPHOajic6aCgpkhO0VmzjOaxoqhUFQo1XbRZ3zH8au8bag1spLXJswQxCuAwojwxA9aNs2fG/IZvZNhlJ3fqxgHVopDnkgoLAtpH7kLWWafZeRr6JgAjugOdrAAJObGgaKRVwLdzjyXQt%2Bzl14lc8xS/P143jxzAQ/Mp0KZJVx3/M7Nc5aXdcLYALRKUcABqmDWCQEA%2BGsguSK6rnXXNay9zzNeHHcI9eP5WHT7PRDEAvpHLzMWuEDr/QQKobprxvqePM3teD14%2B%2BH07M9z2fi%2BXzZtrXWFJH6RysnCe6MkmByQQApA4SkiRJ0uFAui3N04bTiG%2BYGFc%2B6uE7rXKUXAc6tyrjvIh6BSFN35hQ7ugot7t3wQPO45ZdR3HHpPX%2Bp9z5LyrKvOhm8djb2YdcNho9TRHy4fPABfCgE311g/fhqCspVzfrvUR7CJE/xPtIi%2Bsjr4czvqApR69hwQNeJHWyM446gW9iiJgTYmBhHoE/G6PJPI8w0PzeWMJvLuLugiP4ChXCWzwBiHEjoixkkpNSWk9Jnb2ldkVLk41MpChFHDEKylZSuHlIqSIII2pIQ1FqHU%2BpiCGmNI1LMOYHQJILMk62vjIGmKVtFQMSE4phgjElT68ZExpRVgCdmzVcz1KGo0ks%2B1KzVmohsPcG5g4dkEmHfsqTI6PUnNOWc85FwzhXGuDcW4jC7kIM2V6R4TwKDPMEi8JBfg7iYDeO8%2BDHzPmzu%2BSOsEALwM8vHBikFoLfK0pxXSvF9IhxWcJbSpkpRZ0ojWGiyjhwAqYkC1iIKURcR4ksgS%2BFoUmTEk81QkkvkwI0rHBB/zJQqUBTBcl8lJCYp0txPSbZIX4uMqJMyFlzFZSsfZRyzlMCuMFLdZpFj7q%2BX8oEZwW1QrhRqpFdpsV4o9I%2BrGfp7Y/oR2RTlGq9NCpOk5ArMqDAKpBDWNVWq9VqkWhamyIp6opSdW6n1EE4yknGpdKNcak1poCMWstAEq1g2gQyWKGcO09rrUOsdZFdtiAXVNWK/xLSvSPWegedVyVvoDN%2BqmO8gNaDA1BuDUVD1xzQ1hvDRGyMk5owxngLGOM8Y0iIETEmZMXAUkplKam90laGsdhAJmLM5GGK5jzPmtdl7C1FrxZeEtGnS1lj4tJgolZDIZoujWE7b4ev1gYEEXBjYLtHWbC2Vs3RCNAlwG291E0OyPvmCZ3r3bHE9t7X2oUA4EEWRC5Z%2BFYG6tMTJaOvzEGJ2Tsi1OGDM4UVzvnIuJcy6DzbjvKhr8W7obwQQzysGe5CMYfhj%2Bw9NET3jsfP%2BPDL58ufgwneH8v5aNNFI/%2BeiV77oUWAwjL81HMc0SO6j3CZFcYMQeiAxj6NfnMWS2BkH45IJg2BtBad0GHmwbhnm/dCHEKw%2BQrglDtPYb00i1TX4GG6fUXzA4YiD4QEo6BETujeErxk3NRjIivD2e/mxnRHG3NX3ZpJxRHmN6qO8751jLnAuAIkyA3jFm1hyeRQKmxS8GD2Mcc4kVtFbqeO8fGixabJWvEwKoYEVq/h4yYBSfYs8MChXNP0Yg24ySXzc%2Bsx90F7aHhRGiLEuIWue23NyJaRrWvbhtqV%2BEFWquImFMQOrDW0BYC8I6KbRgOt8K68LW2vWk1rlCeE4bhAtvAGKx5DgMxaCcAWrwTwHAtCkFQJwAAWmYDYcwFjWK8LsHgpACCaBuzMUkC0vBSg0L%2BaIPINa7H%2BxWOH%2BhOCSEeyD17nBeAKBAGXYHz2bukDgLAGAiAUBBTiHQSI5BKAZKp1EYwX6GDElIFgYMeBFhTzwJgXUmJaRPcBzQJMkQcd4gx/iZgUZOCA4l7UCkmIwjaBPtL3gIo2CCExOaikGOcnAB1iWnH3BeBYEJEYcQBPWd4BRNYLphuXsVdnvgpYgPAjwzuxbzGy2ozOCwBj0bLAVczCoAYYACguc8754wFXMhBAiDEOwKQMf5BKDUBj3QPgDDbbRvoZtOPIAzFQJkn0nAx6YjWNicoiElAADFOa8FQKGSMeAsB57Ci0E%2BKR7C1iGE0XwtZxg9CiM0bIyQBA970CPyoA%2Bii9BGJXm3Ah2iDBcI0Po8/KhL86JVCYs%2BLADHqCv4Ye%2Bxjb8H9MWY8xFjn/dw90gT2XtvY4KjL7TPiQtlwIQM8VwAdTF4PjrQq8U40MvQbepIuwv4Uov4kgkg0QXAuwC0XAC0Gg0Qv4XgzQ7uaOpAAekgEBXA/4XAXAKBPI4BXAPIGguw0g9%2B9eWOFguOQOIOMwxOZOdO9AZAFAEALBvQjOXszOrOmA7OnO3OvO/O0eQu8MxAouYQ4ugQcu0esuUYCuSu1g0eaujABAmuqYOumAco%2ButAhugOJuhgwA5uL2%2BA1uIYFkGODuyATu0eru5QGOnucuPuSwL2/ugefAIeYeQhkeAuvA/Aseog4gieARyeKg6gFuug6BRhIA2emMreBeReqwJeZeFe9ARImAte6wY8AwzE5ICmkgY8Fqrgt4Y8LAgk5YsMKYYYLAgODekQbWLe8AMwlgHedgEADg4%2BzQ/gp%2BM%2BQ%2BWQiQo%2BgU6Qvek%2BKQ0%2Bkwc%2BrQi%2B%2B%2BXR7eC%2BVQ%2B%2BExu%2Bowy%2BIxfQSxvRkxLRP2V%2BXAt2926OFuj%2Bz%2BO4r%2B7%2B%2BAp8g8P%2Bf%2BDBMwQBWAUQbeGBvAAeCBkBcBv4v4GgzMFYeBXg0QFYxsVBmOHA2OdB/%2BoOpApIkgPIUoxBkg4BC0SOXgsJPxrM7uuwRxD%2BNBkJq87uXg2J1BYJ9BBOq8jeSQdgkgQAA%3D%3D%3D">it may be worth it</a> to implement <code>suffixXOR</code> as mentioned previously:</p>
 
 <pre>
-export fn suffixXOR(bitstring: u64) u64 {
-    return prefixXOR(bitstring) ^ bitstring;
+<span style="font-weight:bold">fn</span> suffixXOR(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span style="font-weight:bold">return</span> prefixXOR(bitstring) ^ bitstring;
 }
 </pre>
 

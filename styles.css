@@ -205,6 +205,29 @@ pre {
 	font-family: "JetBrains Mono", monospace;
 }
 
+.code-num {
+	color: #008080;
+}
+
+.code-str {
+	color: #d14;
+}
+
+.code-type {
+	color: #458;
+	font-weight: bold;
+}
+
+.code-comment {
+	color: #777;
+	font-style: italic;
+}
+
+.code-builtin {
+	/* color: #36005a; */
+	/* font-weight: bold; */
+}
+
 @font-face {
 	font-family: 'JetBrains Mono';
 	src: url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/web/woff2/JetBrainsMono-Bold-Italic.woff2') format('woff2'),
