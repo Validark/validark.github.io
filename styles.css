@@ -160,6 +160,7 @@ a.glyphicon>h3:before,
 a.glyphicon>h3:after {
 	content: "*";
 	font-style: normal;
+	font-size: 15pt;
 	text-decoration: none;
 }
 
