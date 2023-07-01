@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<title>My Site</title>
+
+	<link rel="preload" href="https://github.com/Validark/validark.github.io/raw/main/fonts/Press_Start_2P/PressStart2P-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous">
+
+	<link rel="preload" href="https://github.com/Validark/validark.github.io/raw/main/fonts/Ysabeau_Office/static/YsabeauOffice-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous">
+
+	<link rel="preload" href="https://github.com/Validark/validark.github.io/raw/main/fonts/Ysabeau_Office/static/YsabeauOffice-Medium.ttf" as="font" type="font/ttf" crossorigin="anonymous">
+
+	<link rel="stylesheet" href="./styles.css">
+
+</head>
+
+<body>
+	<article>
+		<center style="display: flex;">
+			<a href="https://github.com/Validark"><img
+					style="margin-top: 16pt; border-radius:50%; width: 100pt; height: 100pt; margin-right: 24pt; margin-top: -36pt;"
+					src="https://avatars.githubusercontent.com/u/15217173?v=4" /></a>
+			<h1>V:/dev_blog/mask_set_bits</h1>
+		</center>
+
+		<center class="mid">
+			<h3>(June 30 2023) How to extract
+				every other set
+				bit</h3>
+		</center>
+
+
+		<p>Sometimes, one wants to extract every other
+			set bit from a bitmap. We may want to isolate
+			the even bits or the odd bits. This article will
+			present implementations for both.</p>
+
+		<center style="margin-top: 1em">
+			<code
+				style="border-radius: 0; background-color: initial;">
+			00<span style="color: black">1</span>0<span style="color: red">1</span>000000<span style="color: black">1</span>0000<span style="color: red">1</span>00000000<span style="color: black">1</span>000<span style="color: red">1</span>000000<span style="color: black">1</span>000000<span style="color: red">1</span>000000<span style="color: black">1</span>000000<span style="color: red">1</span>000000
+
+			&nbsp;&nbsp;&nbsp;&nbsp;&downarrow;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&downarrow;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&downarrow;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&downarrow;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&downarrow;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+
+
+			0000<span style="color: red">1</span>00000000000<span style="color: red">1</span>000000000000<span style="color: red">1</span>0000000000000<span style="color: red">1</span>0000000000000<span style="color: red">1</span>000000
+			</code>
+		</center>
+
+		<h3 id="pdep">Method 1: pdep</h3>
+
+		<p>On x86-64 machines, we have the <code>pdep</code>
+			instruction
+			which can do this in one go.</p>
+
+
+		<p><code>pdep</code> works by iterating over each
+			bit from right to left in the second operand,
+			and performs one of two tasks at each step. If
+			the bit is 0, 0 is written to the output. If
+			the bit is 1, it takes a bit from the first
+			operand and writes that to the output. In
+			effect, each one bit in the second operand is
+			replaced by a subsequent bit in the first
+			operand.</p>
+
+
+		<svg version="1.1" width="982" height="200"
+			xmlns="http://www.w3.org/2000/svg">
+			<style>
+				text {
+					font-family: "JetBrains Mono", monospace;
+					font-size: 11pt;
+				}
+
+				text.nums {
+					letter-spacing: 3.75pt;
+				}
+
+				tspan._1 {
+					fill: red
+				}
+			</style>
+			<rect x="1" y="1" width="980" height="198"
+				stroke="black" fill="transparent"
+				stroke-width="2" />
+
+			<text x="14" y="24">output:</text>
+			<text class="nums" x="86"
+				y="24">0000<tspan class="_1">1</tspan>00000000000<tspan class="_1">1</tspan>000000000000<tspan class="_1">1</tspan>0000000000000<tspan class="_1">1</tspan>0000000000000<tspan class="_1">1</tspan>000000</text>
+			<text x="14" y="50">&nbsp;&nbsp;op 2:</text>
+			<text class="nums" x="86"
+				y="50">0010100000010000100000000100010000001000000100000010000001000000</text>
+
+			<line x1="876" x2="959" y1="52" y2="178"
+				stroke="black" stroke-width="2" />
+			<line x1="779.75" x2="945.25" y1="52" y2="178"
+				stroke="black" stroke-width="2" />
+			<line x1="683.5" x2="931.5" y1="52" y2="178"
+				stroke="black" stroke-width="2" />
+			<line x1="587.25" x2="917.75" y1="52" y2="178"
+				stroke="black" stroke-width="2" />
+			<line x1="491" x2="904" y1="52" y2="178"
+				stroke="black" stroke-width="2" />
+			<line x1="436" x2="890.25" y1="52" y2="178"
+				stroke="black" stroke-width="2" />
+			<line x1="312.25" x2="876.5" y1="52" y2="178"
+				stroke="black" stroke-width="2" />
+			<line x1="243.5" x2="862.75" y1="52" y2="178"
+				stroke="black" stroke-width="2" />
+			<line x1="147.25" x2="849" y1="52" y2="178"
+				stroke="black" stroke-width="2" />
+			<line x1="119.75" x2="835.25" y1="52" y2="178"
+				stroke="black" stroke-width="2" />
+
+
+
+			<text x="14" y="190">&nbsp;&nbsp;op 1:</text>
+			<text class="nums" x="86"
+				y="190">0101010101010101010101010101010101010101010101010101010<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan></text>
+
+		</svg>
+
+
+		<p>Here is the code in <a style="text-decoration: none;" href="https://ziglang.org/">Zig</a>. Note that after <a style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/14995">#14995</a> is resolved there will be built-in support for this operation.</p>
+
+
+
+		<pre>
+fn pdep(src: u64, mask: u64) u64 {
+    return asm ("pdep %[mask], %[src], %[ret]"
+        : [ret] "=r" (-> u64),
+        : [src] "r" (src),
+          [mask] "r" (mask),
+    );
+}
+
+fn maskOddSetBits(bitstring: u64) u64 {
+    return pdep(0b0101010101010101010101010101010101010101010101010101010101010101, bitstring);
+}
+
+fn maskEvenSetBits(bitstring: u64) u64 {
+    return pdep(0b1010101010101010101010101010101010101010101010101010101010101010, bitstring);
+}
+</pre>
+
+
+<p>The <code>pdep</code> instruction is very efficient on recent x86-64 hardware. It has a latency of 3
+	cycles and you can start a new one each cycle even if there are others in-flight.
+
+Unfortunately, it's quite inefficient on AMD architectures earlier than Zen 3, and won't work on non-x86-64 architectures (although this instruction might be added to RISC-V one day). Luckily, there is another way:</p>
+
+<h3 id="prefix-xor">Method 2: prefix-xor</h3>
+
+<p>The prefix-xor operation takes a bitstring and sets each bit to the XOR of all the bits to its right (and itself).</p>
+
+<svg version="1.1" width="982" height="792"
+			xmlns="http://www.w3.org/2000/svg">
+
+			<style>
+				text.num2, text.xor {
+					font-family: "JetBrains Mono", monospace;
+					font-size: 9pt;
+				}
+
+				text.xor {
+					font-size: 8pt;
+				}
+			</style>
+
+			<!-- <rect x="1" y="1" width="980" height="790"
+				stroke="black" fill="transparent"
+				stroke-width="2" /> -->
+
+			<text class="xor" x="236" y="11">⨁</text><text class="num2" x="250" y="13">0010100000010000100000000100010000001000000100000010000001000000</text>
+			<text class="xor" x="236" y="23">⨁</text><text class="num2" x="250" y="25">010100000010000100000000100010000001000000100000010000001000000&lt;</text>
+			<text class="xor" x="236" y="35">⨁</text><text class="num2" x="250" y="37">10100000010000100000000100010000001000000100000010000001000000&lt;&lt;</text>
+			<text class="xor" x="236" y="47">⨁</text><text class="num2" x="250" y="49">0100000010000100000000100010000001000000100000010000001000000&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="59">⨁</text><text class="num2" x="250" y="61">100000010000100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="71">⨁</text><text class="num2" x="250" y="73">00000010000100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="83">⨁</text><text class="num2" x="250" y="85">0000010000100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="95">⨁</text><text class="num2" x="250" y="97">000010000100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="107">⨁</text><text class="num2" x="250" y="109">00010000100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="119">⨁</text><text class="num2" x="250" y="121">0010000100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="131">⨁</text><text class="num2" x="250" y="133">010000100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="143">⨁</text><text class="num2" x="250" y="145">10000100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="155">⨁</text><text class="num2" x="250" y="157">0000100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="167">⨁</text><text class="num2" x="250" y="169">000100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="179">⨁</text><text class="num2" x="250" y="181">00100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="191">⨁</text><text class="num2" x="250" y="193">0100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="203">⨁</text><text class="num2" x="250" y="205">100000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="215">⨁</text><text class="num2" x="250" y="217">00000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="227">⨁</text><text class="num2" x="250" y="229">0000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="239">⨁</text><text class="num2" x="250" y="241">000000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="251">⨁</text><text class="num2" x="250" y="253">00000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="263">⨁</text><text class="num2" x="250" y="265">0000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="275">⨁</text><text class="num2" x="250" y="277">000100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="287">⨁</text><text class="num2" x="250" y="289">00100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="299">⨁</text><text class="num2" x="250" y="301">0100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="311">⨁</text><text class="num2" x="250" y="313">100010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="323">⨁</text><text class="num2" x="250" y="325">00010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="335">⨁</text><text class="num2" x="250" y="337">0010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="347">⨁</text><text class="num2" x="250" y="349">010000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="359">⨁</text><text class="num2" x="250" y="361">10000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="371">⨁</text><text class="num2" x="250" y="373">0000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="383">⨁</text><text class="num2" x="250" y="385">000001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="395">⨁</text><text class="num2" x="250" y="397">00001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="407">⨁</text><text class="num2" x="250" y="409">0001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="419">⨁</text><text class="num2" x="250" y="421">001000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="431">⨁</text><text class="num2" x="250" y="433">01000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="443">⨁</text><text class="num2" x="250" y="445">1000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="455">⨁</text><text class="num2" x="250" y="457">000000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="467">⨁</text><text class="num2" x="250" y="469">00000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="479">⨁</text><text class="num2" x="250" y="481">0000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="491">⨁</text><text class="num2" x="250" y="493">000100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="503">⨁</text><text class="num2" x="250" y="505">00100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="515">⨁</text><text class="num2" x="250" y="517">0100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="527">⨁</text><text class="num2" x="250" y="529">100000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="539">⨁</text><text class="num2" x="250" y="541">00000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="551">⨁</text><text class="num2" x="250" y="553">0000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="563">⨁</text><text class="num2" x="250" y="565">000010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="575">⨁</text><text class="num2" x="250" y="577">00010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="587">⨁</text><text class="num2" x="250" y="589">0010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="599">⨁</text><text class="num2" x="250" y="601">010000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="611">⨁</text><text class="num2" x="250" y="613">10000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="623">⨁</text><text class="num2" x="250" y="625">0000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="635">⨁</text><text class="num2" x="250" y="637">000001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="647">⨁</text><text class="num2" x="250" y="649">00001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="659">⨁</text><text class="num2" x="250" y="661">0001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="671">⨁</text><text class="num2" x="250" y="673">001000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="683">⨁</text><text class="num2" x="250" y="685">01000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="695">⨁</text><text class="num2" x="250" y="697">1000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="707">⨁</text><text class="num2" x="250" y="709">000000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="719">⨁</text><text class="num2" x="250" y="721">00000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="731">⨁</text><text class="num2" x="250" y="733">0000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="743">⨁</text><text class="num2" x="250" y="745">000&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="755">⨁</text><text class="num2" x="250" y="757">00&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+			<text class="xor" x="236" y="767">⨁</text><text class="num2" x="250" y="769">0&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+
+			<line x1="236" x2="710" y1="772" y2="772" stroke="black" stroke-width="2" />
+			<text class="num2" x="250" y="784">0001100000001111100000000011110000000111111100000001111111000000</text>
+</svg>
+
+<p>This has the net effect of setting each bit to a 1 if there were an odd number of bits to the right (including itself), and a 0 if there were an even number of bits to the right (including itself).</p>
+
+<center style="margin-top: 1em">
+	<code
+		style="border-radius: 0; background-color: initial;">
+	bitstring:&nbsp;&nbsp;0010100000010000100000000100010000001000000100000010000001000000
+	<span style="white-space: nowrap">prefix-xor:</span>&nbsp;0001100000001111100000000011110000000111111100000001111111000000
+	</code>
+</center>
+
+<p>Armed with this operation, we simply do a bitwise AND of the bitstring together with its prefix-xor to get a mask of every other set bit.</p>
+
+<pre>
+fn maskOddSetBits(bitstring: u64) u64 {
+    return bitstring & prefixXOR(bitstring);
+}
+
+fn maskEvenSetBits(bitstring: u64) u64 {
+    return bitstring & ~prefixXOR(bitstring);
+}
+</pre>
+
+<p>The <code>prefixXOR</code> function is naïvely implemented as follows:</p>
+
+<pre>
+fn prefixXOR(bitstring: u64) u64 {
+    var x = bitstring;
+    inline for (0..64) |i| { // i ∈ [0, 63]
+        x ^= mask << i;
+    }
+    return x;
+}
+</pre>
+
+<p>However, we can save on operations by taking advantage of how XOR's stack:</p>
+
+<pre>
+fn prefixXOR(bitstring: u64) u64 {
+    var x = bitstring;
+    x ^= x << 1;
+    x ^= x << 2;
+    x ^= x << 4;
+    x ^= x << 8;
+    x ^= x << 16;
+    x ^= x << 32;
+    return x;
+}
+</pre>
+
+<!-- <p style="font-size: smaller !important; margin-top: -1em; margin-bottom: -1em;">(Note we can flip the <code>&lt;&lt;</code> to <code>&gt;&gt;</code> so long as we XOR with <code>bitstring</code> at the end. One optimization we can do for <code>maskEvenSetBits</code> is omit the aforementioned XOR and bitwise AND the final value of <code>x</code> with <code>bitstring</code> to get the evenly set bits with 2 fewer operations.)</p> -->
+
+<p>Geoff Langdale came up with an even more efficient way to compute the prefix-xor <a href="https://branchfree.org/2019/03/06/code-fragment-finding-quote-pairs-with-carry-less-multiply-pclmulqdq/">here</a>. The trick is to perform a <a href="https://en.wikipedia.org/wiki/Carry-less_product">carryless multiply</a> by a bitstring of all 1's. If you think about it, this trick results in the diagram above. This is a great trick because a lot more CPU's support fast carryless multiplies since it is used in cryptography. x86-64 supports it with <code>CLMUL</code> instructions, Arm has <code>PMULL</code>, and SPARC has <code>XMULX</code>. More recent SPARC CPU's even have an <code>XMPMUL</code> instruction which takes up to 2048 bit operands!</p>
+
+<p>Once Zig gets a <code>@mulCarryless</code> builtin (<a style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/9631">#9631</a>), we can implement this function like so:</p>
+
+<pre>
+fn prefixXOR(bitmask: u64) u64 {
+    return @mulCarryless(bitmask, @bitCast(@as(i64, -1)));
+}
+</pre>
+
+<p>If you would like a temporary Zig implementation that uses inline assembly, I have one <a href="https://github.com/Validark/DynSDT/blob/4d31c8be4f3ef48834394c22695fd1b01a83a53c/zig/src/main.zig#L135-L177">here</a>.</p>
+
+
+<p>One final note. If you are on hardware that does not support carryless multiply instructions, you may eliminate the bitwise NOT instruction in <code>maskEvenSetBits</code> by finding the <code>suffixXOR</code> instead. This <a href="https://godbolt.org/#z:OYLghAFBqd5QCxAYwPYBMCmBRdBLAF1QCcAaPECAMzwBtMA7AQwFtMQByARg9KtQYEAysib0QXACx8BBAKoBnTAAUAHpwAMvAFYTStJg1AAvPMFJL6yAngGVG6AMKpaAVxYMQAZi%2BkHAGTwGTAA5dwAjTGIQACYADlIAB1QFQlsGZzcPb19k1JsBQOCwlkjo%2BItMKwKGIQImYgJM908fSur0uoaCItCIqNiEhXrG5uy24e7ekrLBgEoLVFdiZHYOKgYAakTiTBpVAA0AeQAlCHDCYeIg0E3XADZJObvHzYBSAHYAITeNAEFNoDNgA3BqbVTvLwAEU2FwIVxuby8P3%2BQPB7wArNgkTCIUjHPjNlwkSiAUC8Vicej8YSYiTfmTARTsdDqV4CezNpJ6ajyZiWbjIRzHJs4jzGdTKay8ezCVx7uK0cyqTLhZsvHTkQy0bsCMstqpxZ8oQyGRtNgpXFR9scznCEUYQC8ns73t9tUDQcQ2TD7QRrkZFXy3lLBUiWdgiUGmfyVZCI5tNaSlbHpfHw1zo5KBWyE2KtbyYyGczKE/Ks8q0%2BGMxqs7r9eCjR8Tf8GZhVMlGptzSwmAoANbYYGMISYAhfS7nS7%2Bm5Oh4u%2Bdu5NA%2BvELZ%2BgPAd4xe6bAB%2BOz2eEOpyn8JnRjmTZbfzbHZIBG7W17A6HI7HE/hMTPDtu8%2Bei6fMugKruu06btuu6Wtax62j%2BF7AFeBa3s2HALLQnAYrwngcFopCoJwABaZgWksKyYNuXg8KQBCaGhCz9iAGIaPonCSNhdH4ZwvAKCALG0bhaGkHAsAwIgKCoCwiR0FE5CUGgUkydExj%2Bq4DD9qQWDAngqwAGp4JgADuRyJIwnDUTQtAEFEvHnJxFzMMQACe5m8A5DROUc4TaJg1iuaQClsIIRwMLQLmCZpmDhK4wCOGItC8dwvBYL2RjiBF%2BC7NYeDDoleHtr5rjWf5QTWRhEW0Hg4TEB5zhYJxM4sK5CxUAYwAKPpRkmWZSUyIIIhiOwUh9fIShqJxuhcPohgmGY%2BhVbxkALKgiQ1IlAC0RybCcVSYH2mAAGJ9o%2B60jMAY6bEwDTIAgjzrZVDCuKovCoMOxDXFgi0QAsli%2BTU9gME4LgtHoARBH0pQDFNeRpAIYyeNDKSwww0z9NEU2/dlAhdKMwPZBju1Y7UIw9ODMxQxYJPw3okyNKjkPoz9ZGrBI6GYRxEUERwmymFuqnqZsEC4IQJCUVwcy8AJWhzAxTEseV7GkE1kgaAAdJIACcGIxBoHz3PcHwfFR9xeNIOF4VzPF8TRdELCJ4kKdJ9BkBQECO0pIAqcQakaVpOmYJ1xmmThFl0NZxC2eE9lBB5/nuc5Xk%2BX5vWBYwBAhWFnFYNFsXxYl1EpTN6V4Zlf05ZgeW8AVyBFWs1GlVUnGVdVtUYGseGNc1fBtR1BlBz1FmyAN4jDfwgiKCo6gRboMTTY6vPzeEX3Lat6QbVtO30PtR3DC9b0fRX8A/YT/0QA41NTWDxRo3oMM1BfSRIzU9OzATHTY1TeMI%2B0Zcf1MZM3wxp/LI39aak2vgzVmixlgs3FqxDgWFSDmxepwHmJF%2Bb9kFsLIg3o3gxCohLG2gkZakAQHtLA0RvrwMVk1DEGtVbMUkB8DW%2BCNQ7jiF4D4SDOKWwsNbKW9FSCMWYvArwHMLbcSIdLNmHAYjiJQRwSWtsFhvVSHYSQQA">appears to not be worth it on x86-64 and ARM64</a>, but may be a win on other architectures.</p>
+
+<pre>
+fn suffixXOR(bitstring: u64) u64 {
+    var x = bitstring;
+    x ^= x >> 1;
+    x ^= x >> 2;
+    x ^= x >> 4;
+    x ^= x >> 8;
+    x ^= x >> 16;
+    x ^= x >> 32;
+    return x;
+}
+
+fn maskEvenSetBits(bitstring: u64) u64 {
+    return bitstring & suffixXOR(bitstring);
+}
+</pre>
+
+</article>
+</body>
+
+
+<script>
+	// window.location.replace("https://github.com/Validark");
+</script>
+
+</html>
