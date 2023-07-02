@@ -30,7 +30,7 @@
 }
 
 body {
-	background-color: #a8a8a8;
+	background-color: rgb(255, 255, 255);
 }
 
 article {
@@ -41,18 +41,21 @@ article {
 	padding-top: 2cm;
 	padding-right: 2cm;
 	padding-bottom: 2cm;
-	outline-width: 4pt;
+	outline-width: 0;
 	background-color: rgb(255, 255, 255);
 	margin: 0 0 0 0;
-	min-width: 100vw;
+	width: 30cm;
 	/* rgba(95, 0, 0, 0.5); */
 }
 
 @media (min-width: 1190px) {
 	article {
 		margin: 1cm auto 1cm auto;
-		width: 30cm;
-		min-width: 30cm;
+		outline-width: 4pt;
+	}
+
+	body {
+		background-color: #a8a8a8;
 	}
 }
 
