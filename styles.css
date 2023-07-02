@@ -3,7 +3,7 @@
 	src: url('./fonts/Press_Start_2P/PressStart2P-Regular.ttf') format('truetype');
 	font-weight: 400;
 	font-style: normal;
-	font-display: swap;
+	font-display: block;
 }
 
 @font-face {
@@ -11,7 +11,7 @@
 	src: url('./fonts/Ysabeau_Office/static/YsabeauOffice-Regular.ttf') format('truetype');
 	font-weight: 400;
 	font-style: normal;
-	font-display: swap;
+	font-display: block;
 }
 
 @font-face {
@@ -19,7 +19,7 @@
 	src: url('./fonts/Ysabeau_Office/static/YsabeauOffice-Medium.ttf') format('truetype');
 	font-weight: 500;
 	font-style: normal;
-	font-display: swap;
+	font-display: block;
 }
 
 * {
@@ -44,6 +44,7 @@ article {
 	outline-width: 4pt;
 	background-color: rgb(255, 255, 255);
 	margin: 0 0 0 0;
+	min-width: 100vw;
 	/* rgba(95, 0, 0, 0.5); */
 }
 
@@ -51,6 +52,7 @@ article {
 	article {
 		margin: 1cm auto 1cm auto;
 		width: 30cm;
+		min-width: 30cm;
 	}
 }
 
@@ -104,6 +106,10 @@ article {
 
 
 img {
+	width: 100%;
+	/* or max-width: 100%; */
+	height: auto;
+
 	outline-width: 5pt;
 	outline-color: black;
 }
