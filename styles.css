@@ -36,20 +36,21 @@ body {
 article {
 	/* margin: 0 auto 2em auto; */
 	display: block;
-
-	width: 30cm;
-	min-height: 10cm;
+	min-height: 100vh;
 	padding-left: 2cm;
 	padding-top: 2cm;
 	padding-right: 2cm;
 	padding-bottom: 2cm;
-
-	/* max-width: 45em; */
-	margin: 1em auto 1em auto;
 	outline-width: 4pt;
-
 	background-color: rgb(255, 255, 255);
 	/* rgba(95, 0, 0, 0.5); */
+}
+
+@media (min-width: 1190px) {
+	article {
+		margin: 1cm auto 1cm auto;
+		width: 30cm;
+	}
 }
 
 h1,

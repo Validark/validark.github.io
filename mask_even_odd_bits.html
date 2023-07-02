@@ -478,11 +478,11 @@
 }
 
 <span style="font-weight:bold">fn</span> maskOddSetBits(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
-    <span style="font-weight:bold">return</span> pdep(<span class="code-num">0b0101010101010101010101010101010101010101010101010101010101010101</span>, bitstring);
+    <span style="font-weight:bold">return</span> pdep(<span class="code-num">0x5555555555555555</span>, bitstring);
 }
 
 <span style="font-weight:bold">fn</span> maskEvenSetBits(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
-    <span style="font-weight:bold">return</span> pdep(<span class="code-num">0b1010101010101010101010101010101010101010101010101010101010101010</span>, bitstring);
+    <span style="font-weight:bold">return</span> pdep(<span class="code-num">0xaaaaaaaaaaaaaaaa</span>, bitstring);
 }
 </pre>
 
