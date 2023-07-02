@@ -37,14 +37,14 @@ article {
 	/* margin: 0 auto 2em auto; */
 	display: block;
 	min-height: 100vh;
-	padding-left: 2cm;
-	padding-top: 2cm;
-	padding-right: 2cm;
-	padding-bottom: 2cm;
 	outline-width: 0;
 	background-color: rgb(255, 255, 255);
 	margin: 0 0 0 0;
 	width: 30cm;
+	padding-left: 0.5cm;
+	padding-top: 2cm;
+	padding-right: 0.5cm;
+	padding-bottom: 2cm;
 	/* rgba(95, 0, 0, 0.5); */
 }
 
@@ -52,6 +52,10 @@ article {
 	article {
 		margin: 1cm auto 1cm auto;
 		outline-width: 4pt;
+		padding-left: 2cm;
+		padding-top: 2cm;
+		padding-right: 2cm;
+		padding-bottom: 2cm;
 	}
 
 	body {
@@ -72,7 +76,7 @@ h4,
 }
 
 h1 {
-	font-size: 20pt;
+	font-size: 24.5pt;
 	text-align: center;
 }
 
@@ -81,7 +85,7 @@ h2 {
 }
 
 h3 {
-	font-size: 14pt;
+	font-size: 20pt;
 }
 
 h4 {
@@ -134,7 +138,7 @@ a:hover {
 
 p {
 	font-family: "Ysabeau Office", sans-serif;
-	font-size: 16pt;
+	font-size: 20pt;
 }
 
 p,
@@ -171,7 +175,7 @@ a.glyphicon>h3:before,
 a.glyphicon>h3:after {
 	content: "*";
 	font-style: normal;
-	font-size: 15pt;
+	font-size: 21pt;
 	text-decoration: none;
 }
 
@@ -190,12 +194,8 @@ a+p {
 	margin-top: 0;
 }
 
-code {
-	font-size: 14pt;
-}
-
 p code {
-	font-size: smaller;
+	font-size: 80%;
 }
 
 pre {
@@ -214,6 +214,7 @@ code {
 code,
 pre {
 	font-family: "JetBrains Mono", monospace;
+	font-size: 16pt
 }
 
 .code-num {
