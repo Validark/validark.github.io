@@ -43,8 +43,7 @@ article {
 	min-height: 100vh;
 	outline-width: 0;
 	background-color: rgb(255, 255, 255);
-	margin: 0 0 0 0;
-	width: 30cm;
+	margin: 0;
 	padding-left: 0.5cm;
 	padding-top: 2cm;
 	padding-right: 0.5cm;
@@ -52,7 +51,7 @@ article {
 	/* rgba(95, 0, 0, 0.5); */
 }
 
-@media (min-width: 1190px) {
+@media only screen and (min-width: 1190px) {
 	article {
 		margin: 1cm auto 1cm auto;
 		outline-width: 4pt;
@@ -60,6 +59,7 @@ article {
 		padding-top: 2cm;
 		padding-right: 2cm;
 		padding-bottom: 2cm;
+		width: 30cm;
 	}
 
 	body {
@@ -317,4 +317,23 @@ p code {
 	font-weight: 400;
 	font-style: normal;
 	font-display: swap;
+}
+
+@media only screen and (max-width: 1189px) {
+
+	p,
+	h1,
+	h2,
+	h3,
+	h4 {
+		font-size: 225% !important;
+	}
+
+	pre>code {
+		font-size: 175% !important;
+	}
+
+	article {
+		margin-bottom: 4em;
+	}
 }

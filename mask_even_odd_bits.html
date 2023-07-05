@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=0.375">
+	<meta name="viewport" content="width=device-width, initial-scale=0.35">
 	<meta name="description" content="An article on how to how to extract every other set bit. In other words, how to mask even set bits or how to mask odd set bits. Every other 1 in a bitstring is isolated.">
 	<title>How to extract every other set bit from a bitstring</title>
 
@@ -634,17 +634,17 @@ xmlns="http://www.w3.org/2000/svg">
 
 <!-- <p style="font-size: smaller !important; margin-top: -1em; margin-bottom: -1em;">(Note we can flip the <code>&lt;&lt;</code> to <code>&gt;&gt;</code> so long as we XOR with <code>bitstring</code> at the end. One optimization we can do for <code>maskEvenSetBits</code> is omit the aforementioned XOR and bitwise AND the final value of <code>x</code> with <code>bitstring</code> to get the evenly set bits with 2 fewer operations.)</p> -->
 
-<p>Geoff Langdale explained an even more efficient way to compute the prefix-xor <a target="_blank" rel="noopener noreferrer" href="https://branchfree.org/2019/03/06/code-fragment-finding-quote-pairs-with-carry-less-multiply-pclmulqdq/">here</a>. The trick is to perform a <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/Carry-less_product">carryless multiply</a> by a bitstring of all 1's. If you think about it, this trick results in the <a href="#xor-monstronsity">diagram above</a>. This is a great trick because a lot more CPU's support fast carryless multiplies since it is used in cryptography. x86-64 supports it with <code>clmul</code> instructions, ARM has <code>pmull</code>, and SPARC has <code>xmulx</code>. More recent SPARC CPU's even have an <code>xmpmul</code> instruction which takes up to 2048 bit operands!</p>
+<p>Geoff Langdale explained an even more efficient way to compute the prefix-xor <a target="_blank" rel="noopener noreferrer" href="https://branchfree.org/2019/03/06/code-fragment-finding-quote-pairs-with-carry-less-multiply-pclmulqdq/">here</a>. The trick is to perform a <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/Carry-less_product">carryless multiply</a> by a bitstring of all 1's. If you think about it, this trick results in the <a href="#xor-monstronsity">diagram above</a>. This is a great trick because a lot more CPU's support fast carryless multiplies since it is used in cryptography. x86-64 supports it via <code>clmul</code> instructions, ARM has <code>pmull</code>, and SPARC has <code>xmulx</code>. It's even <a target="_blank" rel="noopener noreferrer" href="https://uops.info/table.html?search=clmul&cb_lat=on&cb_tp=on&cb_uops=on&cb_ports=on&cb_ZENp=on&cb_ZEN2=on&cb_ZEN3=on&cb_measurements=on&cb_doc=on&cb_avx=on&cb_others=on">fast on early Zen architectures</a>!</p>
 
 <p>Once Zig gets a <code><span class="code-builtin">@mulCarryless</span></code> builtin (<a target="_blank" rel="noopener noreferrer"style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/9631">#9631</a>), we can implement this function like so:</p>
 
 <pre>
 <code><span style="font-weight:bold">fn</span> prefixXOR(bitmask: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
-    <span style="font-weight:bold">return</span> <span class="code-builtin">@mulCarryless</span>(bitmask, <span class="code-builtin">@bitCast</span>(<span class="code-builtin">@as</span>(<span class="code-type">i64</span>, <span class="code-num">-1</span>)));
+    <span style="font-weight:bold">return</span> <span class="code-builtin">@mulCarryless</span>(bitmask, <span class="code-builtin">@as</span>(<span class="code-type">u64</span>, <span class="code-builtin">@bitCast</span>(<span class="code-builtin">@as</span>(<span class="code-type">i64</span>, <span class="code-num">-1</span>))));
 }</code>
 </pre>
 
-<p>If you would like a temporary Zig implementation that uses inline assembly, I have one <a target="_blank" rel="noopener noreferrer" href="https://github.com/Validark/DynSDT/blob/4d31c8be4f3ef48834394c22695fd1b01a83a53c/zig/src/main.zig#L135-L177">here</a>.</p>
+<p>If you would like a temporary Zig implementation that uses inline assembly, I have one <a target="_blank" rel="noopener noreferrer" href="https://github.com/Validark/DynSDT/blob/4d31c8be4f3ef48834394c22695fd1b01a83a53c/zig/src/main.zig#L135-L177">here</a>. (Unfortunately it uses <code>vpclmulqdq</code> rather than <code>pclmulqdq</code> because it is derived from crypto code in the Zig standard library and I currently don't know how to modify inline assembly properly.)</p>
 
 
 <a href="#suffix-xor" class="glyphicon"><h3 id="suffix-xor">Method 3: suffix-xor</h3></a>
