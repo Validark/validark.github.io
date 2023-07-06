@@ -640,7 +640,8 @@ xmlns="http://www.w3.org/2000/svg">
 
 <pre>
 <code><span style="font-weight:bold">fn</span> prefixXOR(bitmask: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
-    <span style="font-weight:bold">return</span> <span class="code-builtin">@mulCarryless</span>(bitmask, <span class="code-builtin">@as</span>(<span class="code-type">u64</span>, <span class="code-builtin">@bitCast</span>(<span class="code-builtin">@as</span>(<span class="code-type">i64</span>, <span class="code-num">-1</span>))));
+    <span style="font-weight:bold">const</span> all_ones = <span class="code-builtin">@as</span>(<span class="code-type">u64</span>, <span class="code-builtin">@bitCast</span>(<span class="code-builtin">@as</span>(<span class="code-type">i64</span>, <span class="code-num">-1</span>)));
+    <span style="font-weight:bold">return</span> <span class="code-builtin">@mulCarryless</span>(bitmask, all_ones);
 }</code>
 </pre>
 
