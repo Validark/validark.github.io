@@ -326,14 +326,15 @@ p code {
 	h2,
 	h3,
 	h4 {
-		font-size: 300% !important;
+		font-size: 250% !important;
 	}
 
 	pre>code {
-		font-size: 175% !important;
+		font-size: 165% !important;
 	}
 
 	article {
-		margin-bottom: 4em;
+		padding-bottom: 0cm;
+		padding-top: 1cm;
 	}
 }
