@@ -54,12 +54,18 @@ article {
 @media only screen and (min-width: 1190px) {
 	article {
 		margin: 1cm auto 1cm auto;
-		outline-width: 4pt;
 		padding-left: 2cm;
 		padding-top: 2cm;
 		padding-right: 2cm;
 		padding-bottom: 2cm;
 		width: 30cm;
+	}
+
+	img,
+	article,
+	pre,
+	svg {
+		outline-width: 4pt;
 	}
 
 	body {
@@ -75,7 +81,7 @@ h4,
 	font-family: 'Press Start 2P', cursive;
 	text-decoration: underline;
 	text-decoration-style: double;
-	text-decoration-thickness: 1.5pt;
+	text-decoration-thickness: 0.1em;
 	line-height: 2;
 }
 
@@ -109,11 +115,17 @@ div,
 }
 
 img,
-article {
+article,
+pre,
+svg {
 	outline-style: double;
 	outline-color: black;
+	/* outline-width: thick; */
 }
 
+svg {
+	background-color: rgb(240, 241, 242);
+}
 
 
 img {
