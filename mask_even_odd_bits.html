@@ -6,41 +6,10 @@
 	<meta name="viewport" content="width=device-width, initial-scale=0.35">
 	<meta name="description" content="An article on how to how to extract every other set bit. In other words, how to mask even set bits or how to mask odd set bits. Every other 1 in a bitstring is isolated.">
 	<title>How to extract every other set bit from a bitstring</title>
-
 	<link rel="preload" href="./fonts/Press_Start_2P/PressStart2P-Regular.ttf" as="font" type="font/ttf">
-
 	<link rel="preload" href="./fonts/Ysabeau_Office/static/YsabeauOffice-Regular.ttf" as="font" type="font/ttf">
-
 	<link rel="stylesheet" href="https://necolas.github.io/normalize.css/8.0.1/normalize.css">
 	<link rel="stylesheet" href="./styles.css">
-	<style>
-		text {
-			font-family: "JetBrains Mono", monospace;
-			font-size: 11pt;
-		}
-
-		text.nums {
-			letter-spacing: 3.75pt;
-		}
-
-		tspan._1 {
-			fill: #d14;
-		}
-
-		svg#intro-pic text,
-		svg#prefix-xor text {
-			font-size: 16pt;
-		}
-
-		text.num2, text.xor {
-			font-family: "JetBrains Mono", monospace;
-			font-size: 9pt;
-		}
-
-		text.xor {
-			font-size: 8pt;
-		}
-	</style>
 
 	<link rel="apple-touch-icon" sizes="180x180" href="./DynSDT/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="./DynSDT/favicon-32x32.png">
@@ -68,8 +37,6 @@
 			<text class="post" x="245" y="40" style="font-size: 65%">(June 30 2023)</text>
 		</svg> -->
 		<h4 style="text-align: center;">(June 30 2023)</h4>
-
-
 
 		<p>Sometimes, one wants to extract every other set bit from a bitmap. We may want to isolate
 			the even bits or the odd bits. This article presents implementations for both.</p>
@@ -106,6 +73,35 @@
 		<svg version="1.1" width="100%"
 			viewBox="0 6 959 192"
 			xmlns="http://www.w3.org/2000/svg">
+
+			<style>
+				text {
+					font-family: "JetBrains Mono", monospace;
+					font-size: 11pt;
+				}
+
+				text.nums {
+					letter-spacing: 3.75pt;
+				}
+
+				tspan._1 {
+					fill: #d14;
+				}
+
+				svg#intro-pic text,
+				svg#prefix-xor text {
+					font-size: 16pt;
+				}
+
+				text.num2, text.xor {
+					font-family: "JetBrains Mono", monospace;
+					font-size: 9pt;
+				}
+
+				text.xor {
+					font-size: 8pt;
+				}
+			</style>
 			<!-- <rect x="1" y="1" width="980" height="198"
 				stroke="black" fill="transparent"
 				stroke-width="2" /> -->
@@ -584,7 +580,7 @@
 
 <p>This has the net effect of setting each bit to a 1 if there were an odd number of bits to the right (including itself), and a 0 if there were an even number of bits to the right (including itself).</p>
 
-<svg id="prefix-xor" version="1.1" viewBox="0 0 972 46" width="100%"
+<svg id="prefix-xor-svg" version="1.1" viewBox="0 0 972 46" width="100%"
 xmlns="http://www.w3.org/2000/svg">
 <!-- <rect x="1" y="1" width="980" height="48"
 	stroke="black" fill="transparent"
