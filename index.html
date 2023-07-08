@@ -74,5 +74,9 @@
 			document.body.appendChild(prerender);
 		}
 	}
+
+	for (const a of document.getElementsByTagName("a")) {
+		a.addEventListener("mousedown", e => window.location.assign(a.href));
+	}
 </script>
 </html>
