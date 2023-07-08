@@ -133,7 +133,7 @@ img {
 	/* or max-width: 100%; */
 	height: auto;
 
-	outline-width: 5pt;
+	outline-width: 6pt;
 	outline-color: black;
 }
 
@@ -337,13 +337,16 @@ p code {
 	h1,
 	h2,
 	h3,
-	h4,
-	a.post {
+	h4 {
 		font-size: 250% !important;
 	}
 
 	pre>code {
 		font-size: 165% !important;
+	}
+
+	a.post {
+		font-size: 200% !important;
 	}
 
 	article {
