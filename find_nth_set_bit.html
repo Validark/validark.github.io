@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=0.35">
+	<meta name="description" content="This article explains how to find the position of the n'th set bit in a bitstring.">
+	<title>How to find the nth set bit in a bitstring</title>
+	<link rel="preload" href="./fonts/Press_Start_2P/PressStart2P-Regular.ttf" as="font" type="font/ttf">
+	<link rel="preload" href="./fonts/Ysabeau_Office/static/YsabeauOffice-Regular.ttf" as="font" type="font/ttf">
+	<link rel="stylesheet" href="https://necolas.github.io/normalize.css/8.0.1/normalize.css">
+	<link rel="stylesheet" href="./styles.css">
+
+	<link rel="apple-touch-icon" sizes="180x180" href="./DynSDT/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="./DynSDT/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./DynSDT/favicon-16x16.png">
+	<link rel="manifest" href="./DynSDT/site.webmanifest">
+</head>
+
+<body>
+	<article>
+		<style>
+			text {
+				font-family: "JetBrains Mono", monospace;
+				font-size: 11pt;
+			}
+
+			text.nums {
+				letter-spacing: 3.75pt;
+			}
+
+			tspan._1 {
+				fill: #d14;
+			}
+
+			figure#intro-picture text,
+			figure#prefix-xor-recursive-visualization text,
+			svg#prefix-xor-svg text {
+				font-size: 16pt;
+			}
+
+			text.num2, text.xor {
+				font-family: "JetBrains Mono", monospace;
+				font-size: 9pt;
+			}
+
+			text.xor {
+				font-size: 8pt;
+			}
+		</style>
+		<center style="display: flex;">
+			<a aria-label="Validark's GitHub profile" target="_blank" rel="noopener noreferrer" href="https://github.com/Validark"><img
+					width="133.33333333"
+					height="133.33333333"
+					alt="Validark's logo which has a V:/ in the center"
+					style="margin-top: 16pt; border-radius:50%; width: 100pt; height: 100pt; margin-right: 24pt; margin-top: -13pt;"
+					src="https://avatars.githubusercontent.com/u/15217173?v=4" /></a>
+			<h1><a style="text-decoration: none;" href="./index.html">V:/dev</a>
+				<!-- <a style="text-decoration: none;">/mask_even_odd_bits</a> -->
+			</h1>
+		</center>
+
+		<h2 id="title" style="text-align: center;">How to find the <var style="font-style: normal;">n</var>'th set bit in a bitstring</h2>
+		<!-- <svg id="title" style="margin-top: 1.5em" id="title" viewBox="0 0 635 45">
+			<text class="post" x="0" y="20">How to extract every other set bit</text>
+			<text class="post" x="245" y="40" style="font-size: 65%">(June 30 2023)</text>
+		</svg> -->
+		<h4 style="text-align: center;">(July 18 2023)</h4>
+
+		<p>The two fundamental operations of <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/Succinct_data_structure">succinct data structures</a> and approximate membership filters like the <a target="_blank" rel="noopener noreferrer" href="https://users.cs.utah.edu/~pandey/courses/cs6530/fall22/papers/htfilters/3035918.3035963.pdf">Counting Quotient Filter</a> are <code>select</code> and <code>rank</code>. <code>rank</code> simply returns the number of set bits (i.e. 1's) up to certain position and maps pretty trivially to a bitwise AND with a mask and a <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/Hamming_weight">popcount operation</a> (when operating at the level of a machine word). On the other hand, <code>select</code> returns the index of the <var>n</var>'th set bit, which unfortunately does not map cleanly to a single instruction on most instruction set architectures (ISA's). There are multiple ways to implement the <code>select</code> function, including binary subdivision, finding the target byte and using lookup tables, <a target="_blank" rel="noopener noreferrer" href="https://stackoverflow.com/questions/7669057/find-nth-set-bit-in-an-int">and more</a>. This article will cover the best x86-64 version as well as an implementation based on carryless multiplication.</p>
+
+		<figure id="intro-picture">
+
+		<svg version="1.1" width="100%" viewBox="0 -14 516 80"
+			xmlns="http://www.w3.org/2000/svg">
+			<text style="word-spacing: -0.25em; font-size: smaller" x="4" y="-1">n = 10</text>
+			<text x="123" y="-1" style="font-size: smaller;">11</text>
+			<text x="149" fill="#d14" y="-1" style="font-size: smaller;">10</text>
+			<text x="192" y="-1" style="font-size: smaller;">9</text>
+			<text x="204" y="-1" style="font-size: smaller;">8</text>
+			<text x="243" y="-1" style="font-size: smaller;">7</text>
+			<text x="294" y="-1" style="font-size: smaller;">6</text>
+			<text x="332" y="-1" style="font-size: smaller;">5</text>
+			<text x="369" y="-1" style="font-size: smaller;">4</text>
+			<text x="383" y="-1" style="font-size: smaller;">3</text>
+			<text x="397" y="-1" style="font-size: smaller;">2</text>
+			<text x="422" y="-1" style="font-size: smaller;">1</text>
+			<text x="473" y="-1" style="font-size: smaller;">0</text>
+
+
+			<text x="4" y="20">&nbsp;given:</text>
+			<text x="100" y="20">00<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>00<tspan class="_1">11</tspan>00<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>00<tspan class="_1">1</tspan>00<tspan class="_1">111</tspan>0<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>00</text>
+			<text x="4" y="40">&nbsp;&nbsp;mask:</text>
+			<text x="100" y="40">0000<tspan class="_1">1</tspan>000000000000000000000000000</text>
+			<text x="4" y="60">output:</text>
+			<text x="100" y="60">@ctz(mask) => 27</text>
+		</svg>
+
+		<figcaption>
+			An example select operation is depicted. In this case, we are looking for the 11th 1 bit starting from the right, which happens to be in bit position 27 (0-indexed).
+		</figcaption>
+
+		</figure>
+
+		<a href="#pdep" class="glyphicon"><h3 id="pdep">Method 1: pdep</h3></a>
+
+		<!-- <a href="#pdep" class="glyphicon glyphicon-link"><svg id="pdep" class="header" viewBox="0 0 635 20">
+			<text class="post" x="0" y="15" style="font-size: smaller">Method 1: pdep</text>
+			<text class="post glyphy" x="191.5" y="15" style="font-size: smaller; text-decoration: none;">#</text>
+		</svg></a> -->
+
+		<p>On x86-64 machines, we can use the <code>pdep</code> instruction to isolate the target bit.</p>
+
+		<p><code>pdep</code> works by iterating over each
+			bit from right to left in the second operand,
+			and performs one of two tasks at each step. If
+			the bit is 0, 0 is written to the output. If
+			the bit is 1, it takes a bit from the first
+			operand and writes that to the output. In
+			effect, each one bit in the second operand is
+			replaced by a subsequent bit in the first
+			operand.</p>
+
+		<p>We can take advantage of this property by making a mask where the only 1 bit is at index <code>n</code>, then run it through <code>pdep</code>. This will isolate the <code>n</code>'th bit.</p>
+
+		<figure id="pdep-illustration">
+		<svg version="1.1" width="100%" viewBox="0 6 516 192" xmlns="http://www.w3.org/2000/svg">
+			<!-- <rect x="1" y="1" width="980" height="198"
+				stroke="black" fill="transparent"
+				stroke-width="2" /> -->
+
+			<text x="4" y="24">output:</text>
+
+			<text class="nums" x="76" y="24">0000<tspan class="_1">1</tspan>000000000000000000000000000</text>
+			<text x="4" y="50">&nbsp;&nbsp;op 2:</text>
+
+			<text class="nums" x="76" y="50">00<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>00<tspan class="_1">11</tspan>00<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>00<tspan class="_1">1</tspan>00<tspan class="_1">111</tspan>0<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>00</text>
+
+			<!-- <text class="nums" x="76"
+				y="50">00<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>0000<tspan class="_1">1</tspan>00000000<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000</text> -->
+
+				<!-- 108 -->
+				<!-- 14 -->
+			<line id="line1" x1="481" x2="507" y1="52" y2="178"
+				stroke="#000" stroke-width="2" />
+			<line id="line2" x1="426" x2="494" y1="52" y2="178"
+				stroke="#000" stroke-width="2" />
+			<line id="line3" x1="398" x2="481" y1="52" y2="178"
+				stroke="#000" stroke-width="2" />
+			<line id="line4" x1="385" x2="467" y1="52" y2="178"
+				stroke="#000" stroke-width="2" />
+			<line id="line5" x1="370" x2="453" y1="52" y2="178"
+				stroke="#000" stroke-width="2" />
+			<line id="line6" x1="329" x2="439" y1="52" y2="178"
+				stroke="#000" stroke-width="2" />
+			<line id="line7" x1="287" x2="425" y1="52" y2="178"
+				stroke="#000" stroke-width="2" />
+			<line id="line8" x1="232" x2="411" y1="52" y2="178"
+				stroke="#000" stroke-width="2" />
+			<line id="line9" x1="191" x2="397" y1="52" y2="178"
+				stroke="#000" stroke-width="2" />
+			<line id="line10" x1="177" x2="383" y1="52" y2="178"
+				stroke="#000" stroke-width="2" />
+			<line id="line11" x1="135" x2="369" y1="52" y2="178"
+				stroke="#d14" stroke-width="2" />
+			<line id="line12" x1="107" x2="355" y1="52" y2="178"
+				stroke="#000" stroke-width="2" />
+
+
+				<style>
+				#line1 {
+					/*stroke-dashoffset: 48;
+					stroke-dasharray: 200;*/
+					animation: line1 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line1 {
+					0% {
+						opacity: 100%;
+					}
+
+					2.5% {
+						/* stroke-dashoffset: 200; */
+						opacity: 0%;
+					}
+
+					5% {
+						opacity: 0%;
+						/* stroke-dashoffset: 200; */
+					}
+
+					12.5% {
+						/*stroke-dashoffset: 48;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 48;*/
+						opacity: 100%;
+					}
+				}
+
+				#line2 {
+					/*stroke-dashoffset: 91;
+					stroke-dasharray: 300;*/
+					animation: line2 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line2 {
+					0% {
+						opacity: 100%;
+					}
+
+					2.5% {
+						/*stroke-dashoffset: 300;*/
+						opacity: 0%;
+					}
+
+					12.5% {
+						/*stroke-dashoffset: 300;*/
+						opacity: 0%;
+					}
+
+					20% {
+						/*stroke-dashoffset: 91;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 91;*/
+						opacity: 100%;
+					}
+				}
+
+				#line3 {
+					/*stroke-dashoffset: 22;
+					stroke-dasharray: 300;*/
+
+					animation: line3 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line3 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 300;*/
+						opacity: 0%;
+					}
+
+					20% {
+						/*stroke-dashoffset: 300;*/
+						opacity: 0%;
+					}
+
+					27.5% {
+						/*stroke-dashoffset: 22;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 22;*/
+						opacity: 100%;
+					}
+				}
+
+				#line4 {
+					/*stroke-dashoffset: 467;
+					stroke-dasharray: 821;*/
+
+					animation: line4 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line4 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					27.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					35% {
+						/*stroke-dashoffset: 467;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 467;*/
+						opacity: 100%;
+					}
+				}
+
+				#line5 {
+					/*stroke-dashoffset: 388;
+					stroke-dasharray: 821;*/
+
+					animation: line5 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line5 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					35% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					42.5% {
+						/*stroke-dashoffset: 388;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 388;*/
+						opacity: 100%;
+					}
+				}
+
+				#line6 {
+					/*stroke-dashoffset: 348;
+					stroke-dasharray: 821;*/
+
+					animation: line6 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line6 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					42.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					50% {
+						/*stroke-dashoffset: 348;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 348;*/
+						opacity: 100%;
+					}
+				}
+
+				#line7 {
+					/*stroke-dashoffset: 242;
+					stroke-dasharray: 821;*/
+
+					animation: line7 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line7 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					50% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					57.5% {
+						/*stroke-dashoffset: 242;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 242;*/
+						opacity: 100%;
+					}
+				}
+
+				#line8 {
+					/*stroke-dashoffset: 188;
+					stroke-dasharray: 821;*/
+
+					animation: line8 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line8 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					57.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					65% {
+						/*stroke-dashoffset: 188;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 188;*/
+						opacity: 100%;
+					}
+				}
+
+				#line9 {
+					/*stroke-dashoffset: 107;
+					stroke-dasharray: 821;*/
+
+					animation: line9 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line9 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					65% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					72.5% {
+						/*stroke-dashoffset: 107;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 107;*/
+						opacity: 100%;
+					}
+				}
+
+				#line10 {
+					/*stroke-dashoffset: 93;
+					stroke-dasharray: 821;*/
+
+					animation: line10 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line10 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					72.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					80% {
+						/*stroke-dashoffset: 93;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 93;*/
+						opacity: 100%;
+					}
+				}
+
+				#line11 {
+					/*stroke-dashoffset: 93;
+					stroke-dasharray: 821;*/
+
+					animation: line11 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line11 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					80% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					87.5% {
+						/*stroke-dashoffset: 93;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 93;*/
+						opacity: 100%;
+					}
+				}
+
+				#line12 {
+					/*stroke-dashoffset: 93;
+					stroke-dasharray: 821;*/
+
+					animation: line12 5s ease 1s infinite forwards normal;
+					/**/
+				}
+
+				@keyframes line12 {
+					0% {
+						opacity: 100%;
+					}
+					2.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					87.5% {
+						/*stroke-dashoffset: 821;*/
+						opacity: 0%;
+					}
+
+					95% {
+						/*stroke-dashoffset: 93;*/
+						opacity: 100%;
+					}
+
+					100% {
+						/*stroke-dashoffset: 93;*/
+						opacity: 100%;
+					}
+				}
+			</style>
+
+
+			<text x="4" y="190">&nbsp;&nbsp;op 1:</text>
+			<text class="nums" x="76" y="190">000000000000000000000<tspan class="_1">1</tspan>0000000000</text>
+		</svg>
+
+		<figcaption>
+			For <code>n</code>=10, we create a bitmask via <code>1 << 10</code>, then use <code>pdep</code> to isolate the 11'th set bit.
+		</figcaption>
+		</figure>
+
+
+		<p>From there, all we need to do is count the trailing zeros. Here is the code in <a target="_blank" rel="noopener noreferrer" style="text-decoration: none;" href="https://ziglang.org/">Zig</a>. (Note that after <a target="_blank" rel="noopener noreferrer"style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/14995">#14995</a> is resolved there will be built-in support for the <code>pdep</code> operation.)</p>
+<pre>
+<code><span style="font-weight:bold">fn</span> <span class="code-fn">pdep</span>(src: <span class="code-type">u64</span>, mask: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
+    <span class="code-keyword">return</span> asm (<span class="code-str">"pdep %[mask], %[src], %[ret]"</span>
+        : [ret] <span class="code-str">"=r"</span> (-> <span class="code-type">u64</span>),
+        : [src] <span class="code-str">"r"</span> (src),
+          [mask] <span class="code-str">"r"</span> (mask),
+    );
+}
+
+<span style="font-weight:bold">fn</span> <span class="code-fn">select</span>(bitstring: <span class="code-type">u64</span>, n: <span class="code-type">u6</span>) ?<span class="code-type">u6</span> {
+    <span class="code-keyword">const</span> mask = <span class="code-builtin">@as</span>(<span class="code-type">u64</span>, <span class="code-num">1</span>) << n;
+    <span class="code-keyword">const</span> isolate = pdep(mask, bitstring);
+    <span class="code-keyword">if</span> (isolate == 0) <span class="code-keyword">return</span> <span class="code-keyword">null</span>;
+    <span class="code-keyword">return</span> <span class="code-builtin">@truncate</span>(<span class="code-builtin">@ctz</span>(isolate));
+}</code>
+</pre>
+
+<!-- <p>And here is the assembly</p>
+
+<pre><code><span class="code-label">select:</span>
+	<span class="code-instruction">mov</span>     <span class="code-register">eax</span>, <span class="code-num">1</span>
+	<span class="code-instruction">shlx</span>    <span class="code-register">rax</span>, <span class="code-register">rax</span>, <span class="code-register">rsi</span>
+	<span class="code-instruction">pdep</span>    <span class="code-register">rax</span>, <span class="code-register">rax</span>, <span class="code-register">rdi</span>
+	<span class="code-instruction">tzcnt</span>   <span class="code-register">rax</span>, <span class="code-register">rax</span>
+	<span class="code-instruction">ret</span></code>
+</pre> -->
+
+<p>The <code>pdep</code> instruction is very efficient on recent x86-64 hardware. It has a latency of 3
+	cycles and you can start a new one each cycle even if there are others in-flight. Unfortunately, it's <a target="_blank" rel="noopener noreferrer" href="https://uops.info/table.html?search=pdep&cb_lat=on&cb_tp=on&cb_uops=on&cb_ports=on&cb_ZEN2=on&cb_ZEN3=on&cb_ZEN4=on&cb_measurements=on&cb_doc=on&cb_bmi=on">quite inefficient on AMD architectures earlier than Zen 3</a>, and won't work on non-x86-64 architectures (although this instruction might be added to RISC-V one day). On such machines, you need an alternative method:</p>
+
+<a href="#prefix-xor" class="glyphicon"><h3 id="prefix-xor">Method 2: prefix-xor</h3></a>
+
+<p>The <a target="_blank" rel="noopener noreferrer" href="./mask_even_odd_bits.html#prefix-xor">prefix-xor operation</a> takes a bitstring and sets each bit to the XOR of all the bits to its right (and itself). By performing a bitwise AND of the given bitmask with its prefix-xor (or the bitwise negation of it), we can <a target="_blank" rel="noopener noreferrer" href="./mask_even_odd_bits.html#prefix-xor">extract either the evenly set bits or the oddly set bits</a>. For the <code>select</code> function, we want to isolate the evenly set bits when <var>n</var> is even, and isolate the oddly set bits when <var>n</var> is odd. We can then divide <var>n</var> by two and perform this recursively.</p>
+
+
+<figure id="prefix-xor-recursive-visualization">
+	<svg version="1.1" width="100%" viewBox="0 -14 516 200"
+		xmlns="http://www.w3.org/2000/svg">
+		<g id="step1">
+		<text style="word-spacing: -0.25em; font-size: smaller" x="4" y="-1">n = 10</text>
+		<text x="123" y="-1" style="font-size: smaller;">11</text>
+		<text x="149" y="-1" style="font-size: smaller;" fill="#d14">10</text>
+		<text x="192" y="-1" style="font-size: smaller;">9</text>
+		<text x="204" y="-1" style="font-size: smaller;">8</text>
+		<text x="243" y="-1" style="font-size: smaller;">7</text>
+		<text x="294" y="-1" style="font-size: smaller;">6</text>
+		<text x="332" y="-1" style="font-size: smaller;">5</text>
+		<text x="369" y="-1" style="font-size: smaller;">4</text>
+		<text x="383" y="-1" style="font-size: smaller;">3</text>
+		<text x="397" y="-1" style="font-size: smaller;">2</text>
+		<text x="422" y="-1" style="font-size: smaller;">1</text>
+		<text x="473" y="-1" style="font-size: smaller;">0</text>
+		<text x="100" y="20">00<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>00<tspan class="_1">11</tspan>00<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>00<tspan class="_1">1</tspan>00<tspan class="_1">111</tspan>0<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>00</text>
+		</g>
+
+		<g id="step2">
+		<text style="word-spacing: -0.25em; font-size: smaller" x="4" y="39">n = 5</text>
+		<text x="153" y="39" style="font-size: smaller;" fill="#d14">5</text>
+		<text x="204" y="39" style="font-size: smaller;">4</text>
+		<text x="294" y="39" style="font-size: smaller;">3</text>
+		<text x="369" y="39" style="font-size: smaller;">2</text>
+		<text x="397" y="39" style="font-size: smaller;">1</text>
+		<text x="473" y="39" style="font-size: smaller;">0</text>
+		<text x="100" y="60">0000<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>00000<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>00000<tspan class="_1">1</tspan>00</text>
+		</g>
+
+		<g id="step3">
+		<text style="word-spacing: -0.25em; font-size: smaller" x="4" y="79">n = 2</text>
+		<text x="153" y="79" style="font-size: smaller;" fill="#d14">2</text>
+		<text x="294" y="79" style="font-size: smaller;">1</text>
+		<text x="397" y="79" style="font-size: smaller;">0</text>
+		<text x="100" y="100">0000<tspan class="_1">1</tspan>0000000000<tspan class="_1">1</tspan>0000000<tspan class="_1">1</tspan>00000000</text>
+		</g>
+
+		<g id="step4">
+		<text style="word-spacing: -0.25em; font-size: smaller" x="4" y="119">n = 1</text>
+		<text x="153" y="119" style="font-size: smaller;" fill="#d14">1</text>
+		<text x="397" y="119" style="font-size: smaller;">0</text>
+		<text x="100" y="140">0000<tspan class="_1">1</tspan>000000000000000000<tspan class="_1">1</tspan>00000000</text>
+		</g>
+
+		<g id="step5">
+		<text style="word-spacing: -0.25em; font-size: smaller" x="4" y="159">n = 0</text>
+		<text x="153" y="159" style="font-size: smaller;" fill="#d14">0</text>
+		<text x="100" y="180">0000<tspan class="_1">1</tspan>000000000000000000000000000</text>
+		</g>
+
+		<style>
+			#step1 {
+				/*stroke-dashoffset: 48;
+				stroke-dasharray: 200;*/
+				animation: step1 30s ease 1s infinite forwards normal;
+				/**/
+			}
+
+			@keyframes step1 {
+				0% {
+					opacity: 100%;
+				}
+
+				2.5% {
+					/* stroke-dashoffset: 200; */
+					opacity: 0%;
+				}
+
+				5% {
+					opacity: 0%;
+					/* stroke-dashoffset: 200; */
+				}
+
+				12.5% {
+					/*stroke-dashoffset: 48;*/
+					opacity: 100%;
+				}
+
+				100% {
+					/*stroke-dashoffset: 48;*/
+					opacity: 100%;
+				}
+			}
+
+			#step2 {
+				/*stroke-dashoffset: 91;
+				stroke-dasharray: 300;*/
+				animation: step2 30s ease 1s infinite forwards normal;
+				/**/
+			}
+
+			@keyframes step2 {
+				0% {
+					opacity: 100%;
+				}
+
+				2.5% {
+					/*stroke-dashoffset: 300;*/
+					opacity: 0%;
+				}
+
+				12.5% {
+					/*stroke-dashoffset: 300;*/
+					opacity: 0%;
+				}
+
+				20% {
+					/*stroke-dashoffset: 91;*/
+					opacity: 100%;
+				}
+
+				100% {
+					/*stroke-dashoffset: 91;*/
+					opacity: 100%;
+				}
+			}
+
+			#step3 {
+				/*stroke-dashoffset: 22;
+				stroke-dasharray: 300;*/
+
+				animation: step3 30s ease 1s infinite forwards normal;
+				/**/
+			}
+
+			@keyframes step3 {
+				0% {
+					opacity: 100%;
+				}
+				2.5% {
+					/*stroke-dashoffset: 300;*/
+					opacity: 0%;
+				}
+
+				20% {
+					/*stroke-dashoffset: 300;*/
+					opacity: 0%;
+				}
+
+				27.5% {
+					/*stroke-dashoffset: 22;*/
+					opacity: 100%;
+				}
+
+				100% {
+					/*stroke-dashoffset: 22;*/
+					opacity: 100%;
+				}
+			}
+
+			#step4 {
+				/*stroke-dashoffset: 467;
+				stroke-dasharray: 821;*/
+
+				animation: step4 30s ease 1s infinite forwards normal;
+				/**/
+			}
+
+			@keyframes step4 {
+				0% {
+					opacity: 100%;
+				}
+				2.5% {
+					/*stroke-dashoffset: 821;*/
+					opacity: 0%;
+				}
+
+				27.5% {
+					/*stroke-dashoffset: 821;*/
+					opacity: 0%;
+				}
+
+				35% {
+					/*stroke-dashoffset: 467;*/
+					opacity: 100%;
+				}
+
+				100% {
+					/*stroke-dashoffset: 467;*/
+					opacity: 100%;
+				}
+			}
+
+			#step5 {
+				/*stroke-dashoffset: 388;
+				stroke-dasharray: 821;*/
+
+				animation: step5 30s ease 1s infinite forwards normal;
+				/**/
+			}
+
+			@keyframes step5 {
+				0% {
+					opacity: 100%;
+				}
+				2.5% {
+					/*stroke-dashoffset: 821;*/
+					opacity: 0%;
+				}
+
+				35% {
+					/*stroke-dashoffset: 821;*/
+					opacity: 0%;
+				}
+
+				42.5% {
+					/*stroke-dashoffset: 388;*/
+					opacity: 100%;
+				}
+
+				100% {
+					/*stroke-dashoffset: 388;*/
+					opacity: 100%;
+				}
+			}
+		</style>
+	</svg>
+
+	<figcaption>
+		An example select operation is depicted. In this case, we are looking for the 11th 1 bit starting from the right, which happens to be in bit position 27 (0-indexed).
+	</figcaption>
+</figure>
+
+<p>I see two ways of efficiently flipping between finding the evenly and oddly set bits depending on whether <var>n</var> is even or odd.</p>
+
+<ol style="width: 100%;">
+<li><p>Isolating the least significant bit from <var>n</var> and XOR'ing it with a bitstring of all ones (i.e. -1), then performing our carryless multiply on the resulting value and the given bitstring.</p><pre><code><span class="code-keyword">fn</span> <span class="code-fn">select</span>(mask: <span class="code-type">u64</span>, n: <span class="code-type">u6</span>) ?<span class="code-type">u6</span> {
+    <span class="code-keyword">const</span> ones: <span class="code-type">u64</span> = std.math.maxInt(<span class="code-type">u64</span>);
+    <span class="code-keyword">var</span> m = mask;
+    <span class="code-keyword">inline</span> <span class="code-keyword">for</span> (<span class="code-num">0</span>..<span class="code-num">6</span>) |i| {
+        <span class="code-keyword">const</span> f = ((n >> i) & <span class="code-num">1</span>) ^ ones;
+        m &= <span class="code-builtin">@mulCarryless</span>(m, f);
+    }
+    <span class="code-keyword">if</span> (m == <span class="code-num">0</span>) <span class="code-keyword">return</span> <span class="code-keyword">null</span>;
+    <span class="code-keyword">return</span> <span class="code-builtin">@truncate</span>(<span class="code-builtin">@ctz</span>(m));
+}</code></pre></li>
+<li><p>Producing a bitmask where all the bits are the same as the least significant bit of <var>n</var> and XOR'ing that with the value we get from our carryless multiply between the given bitstring and a bitstring of all ones (i.e. -1).</p><pre><code><span class="code-keyword">fn</span> <span class="code-fn">select</span>(m: <span class="code-type">u64</span>, n: <span class="code-type">u6</span>) ?<span class="code-type">u6</span> {
+    <span class="code-keyword">var</span> mask = m;
+    <span class="code-keyword">inline</span> <span class="code-keyword">for</span> (<span class="code-num">0</span>..<span class="code-num">6</span>) |i| {
+        <span class="code-keyword">const</span> msb = <span class="code-builtin">@as</span>(<span class="code-type">i64</span>, n) << (<span class="code-num">63</span> - i);
+        <span class="code-keyword">const</span> ext: <span class="code-type">u64</span> = <span class="code-builtin">@bitCast</span>(msb >> <span class="code-num">63</span>);
+        mask &= prefixXOR(mask) ^ ext;
+    }
+    <span class="code-keyword">if</span> (mask == <span class="code-num">0</span>) <span class="code-keyword">return</span> <span class="code-keyword">null</span>;
+    <span class="code-keyword">return</span> <span class="code-builtin">@truncate</span>(<span class="code-builtin">@ctz</span>(mask));
+}</code></pre></li>
+</ol>
+
+<p>In both cases, the CPU should be able to work ahead and compute the extra value before the bitstring is ready to be carryless multiplied. However, I presume the first option may start its first carryless multiply 2 cycles later (<code>all_ones ^ (n & 1)</code>). I presume the second option takes one extra cycle per step because we have to perform an extra XOR after the carryless multiply. Therefore, I assume the first technique will be faster overall because we are planning on doing more than 2 iterations. I will update this post with a Godbolt link once <a target="_blank" rel="noopener noreferrer"style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/16435">#16435</a> is fixed.</p>
+
+<p>I would be interested to hear from anyone with a real-world application running an implementation of <code>select</code> on something other than x86-64. If your machine supports a fast carryless multiply, this just might work for you! If carryless multiply can be computed in 3 cycles with a throughput of 1, I estimate the first version should take ~28 cycles and the second version should take ~32 cycles. It depends on how many set-up instructions are needed and whether your application can assert that you are passing in an <var>n</var> fewer than the population count of the bitstring (if not, add 1 to my estimates).</p>
+
+<p>Happy hacking!<br>&horbar;&#x202F;Validark</p>
+
+</article>
+
+<!-- <script src="https://utteranc.es/client.js"
+        repo="validark/validark.github.io"
+        issue-term="title"
+        label="comments section"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script> -->
+
+</body>
+
+</html>

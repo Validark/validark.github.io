@@ -31,6 +31,12 @@
 		<h2 style="margin-top: 28pt;">Posts:</h2>
 
 		<div>
+			<a class="post" href="./find_nth_set_bit.html">(July 18 2023) How to find the <var style="font-style: normal;">n</var>'th set bit in a bitstring</a>
+			<script>prerenders.push("./find_nth_set_bit.html")</script>
+			<noscript><link rel="prerender" href="./find_nth_set_bit.html"></noscript>
+		</div>
+
+		<div>
 			<a class="post" href="./mask_even_odd_bits.html">(June 30 2023) How to extract every other set bit from a bitstring</a>
 			<script>prerenders.push("./mask_even_odd_bits.html")</script>
 			<noscript><link rel="prerender" href="./mask_even_odd_bits.html"></noscript>
@@ -66,6 +72,7 @@
 
 
 <script>
+	// This code adds prerender elements after the page loads.
 	window.onload = function() {
 		for (let i = 0; i < prerenders.length; i++) {
 			var prerender = document.createElement("link");
@@ -75,6 +82,8 @@
 		}
 	}
 
+	// This makes it so we load the next page on mousedown rather than a click (mousedown+up)
+	// Makes it feel just a tiny bit faster :)
 	for (const a of document.getElementsByTagName("a")) {
 		a.addEventListener("mousedown", e => window.location.assign(a.href));
 	}

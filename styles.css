@@ -152,15 +152,30 @@ a:hover {
 	text-decoration-color: rgb(90, 51, 34);
 }
 
-p {
+p,
+ol li::marker {
 	font-family: "Ysabeau Office", sans-serif;
 	font-size: 20pt;
+}
+
+li {
+	margin-left: 4em;
+}
+
+figcaption {
+	font-family: "Ysabeau Office", sans-serif;
+	font-size: 16pt;
+	color: #808080;
+	/* text-align: justify; */
+	font-style: italic;
+	text-indent: 2em;
 }
 
 p,
 pre,
 h3,
-h4 {
+h4,
+li {
 	margin-top: 1.5em;
 	margin-bottom: 1.5em;
 }
@@ -226,14 +241,20 @@ pre>code {
 	border-radius: 0;
 }
 
+pre>code,
 code {
 	font-family: "JetBrains Mono", monospace;
 	font-size: 14pt;
 }
 
-p code {
+p code,
+figcaption code {
 	border-radius: 6px;
 	font-size: 80%;
+}
+
+.code-keyword {
+	font-weight: bold;
 }
 
 .code-num {
@@ -255,8 +276,25 @@ p code {
 }
 
 .code-builtin {
-	/* color: #36005a; */
-	/* font-weight: bold; */
+	color: #005C7A
+		/* color: #36005a; */
+		/* font-weight: bold; */
+}
+
+.code-instruction {
+	color: #0000cf;
+}
+
+.code-register {
+	color: #6179b6;
+}
+
+.code-label {
+	color: #005757;
+}
+
+.code-fn {
+	color: #900;
 }
 
 @font-face {
@@ -337,12 +375,13 @@ p code {
 	h1,
 	h2,
 	h3,
-	h4 {
+	h4,
+	ol li::marker {
 		font-size: 250% !important;
 	}
 
 	pre>code {
-		font-size: 165% !important;
+		font-size: 175% !important;
 	}
 
 	a.post {
