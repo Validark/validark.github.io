@@ -585,11 +585,42 @@ xmlns="http://www.w3.org/2000/svg">
 	stroke="black" fill="transparent"
 	stroke-width="2" /> -->
 <text x="4" y="20">&nbsp;bitstring:</text>
-<text x="150" y="20">00<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>0000<tspan class="_1">1</tspan>00000000<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000</text>
+<style>
+text#bitstr_to_prefix_xor:hover {
+	cursor: pointer;
+}
+</style>
+<text id="bitstr_to_prefix_xor" x="150" y="20"><tspan>0</tspan><tspan>0</tspan><tspan class="_1">1</tspan><tspan>0</tspan><tspan class="_1">1</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan class="_1">1</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan class="_1">1</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan class="_1">1</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan class="_1">1</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan class="_1">1</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan class="_1">1</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan class="_1">1</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan class="_1">1</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan><tspan>0</tspan></text>
 
 <text x="4" y="40">prefix-xor:</text>
-<text x="150" y="40">000<tspan class="_1">1</tspan><tspan class="_1">1</tspan>0000000<tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan>000000000<tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan>0000000<tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan>0000000<tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan>000000</text>
+<text id="prefix-xor-bitstring" x="150" y="40">000<tspan class="_1">1</tspan><tspan class="_1">1</tspan>0000000<tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan>000000000<tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan>0000000<tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan>0000000<tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan>000000</text>
 </svg>
+<script>
+{
+	const bitstr_to_prefix_xor = document.getElementById("bitstr_to_prefix_xor");
+	const prefix_xor_bitstring = document.getElementById("prefix-xor-bitstring")
+	const tab = ['0', '<tspan class="_1">1</tspan>'];
+	const supanoodle_children = [...bitstr_to_prefix_xor.childNodes.values()];
+
+	function onBitClick(e) {
+		const fe = !+this.textContent;
+		const fe_n = +fe;
+		this.textContent = fe_n;
+		this.setAttribute("class", `_${fe_n}`);
+		const new_str = new Array(64);
+		let xor = 0;
+		for (let i = 64; --i >= 0; ) {
+			xor ^= +supanoodle_children[i].textContent;
+			new_str[i] = tab[xor];
+		}
+		prefix_xor_bitstring.innerHTML = new_str.join("")
+	}
+
+	for (const node of bitstr_to_prefix_xor.childNodes) {
+		node.addEventListener("click", onBitClick)
+	}
+}
+</script>
 
 <p>Armed with this operation, we simply do a bitwise AND of the bitstring together with its prefix-xor to get a mask of every other set bit.</p>
 
