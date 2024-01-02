@@ -640,7 +640,7 @@ text#bitstr_to_prefix_xor:hover {
 <code><span class="code-keyword">fn</span> <span class="code-fn">prefixXOR</span>(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
     <span class="code-keyword">var</span> x = bitstring;
     <span class="code-keyword">inline</span> <span class="code-keyword">for</span> (<span class="code-num">1</span>..<span class="code-num">64</span>) |i| { <span class="code-comment">// i ∈ [1, 63]</span>
-        x ^= bitstring << i;
+        x ^= bitstring &lt;&lt; i;
     }
     <span class="code-keyword">return</span> x;
 }</code>
@@ -651,12 +651,12 @@ text#bitstr_to_prefix_xor:hover {
 <pre>
 <code><span class="code-keyword">fn</span> <span class="code-fn">prefixXOR</span>(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
     <span class="code-keyword">var</span> x = bitstring;
-    x ^= x << <span class="code-num">1</span>;
-    x ^= x << <span class="code-num">2</span>;
-    x ^= x << <span class="code-num">4</span>;
-    x ^= x << <span class="code-num">8</span>;
-    x ^= x << <span class="code-num">16</span>;
-    x ^= x << <span class="code-num">32</span>;
+    x ^= x &lt;&lt; <span class="code-num">1</span>;
+    x ^= x &lt;&lt; <span class="code-num">2</span>;
+    x ^= x &lt;&lt; <span class="code-num">4</span>;
+    x ^= x &lt;&lt; <span class="code-num">8</span>;
+    x ^= x &lt;&lt; <span class="code-num">16</span>;
+    x ^= x &lt;&lt; <span class="code-num">32</span>;
     <span class="code-keyword">return</span> x;
 }</code>
 </pre>
