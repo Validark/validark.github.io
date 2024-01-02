@@ -609,7 +609,7 @@ xmlns="http://www.w3.org/2000/svg">
 <code><span class="code-keyword">fn</span> <span class="code-fn">prefixXOR</span>(bitstring: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
     <span class="code-keyword">var</span> x = bitstring;
     <span class="code-keyword">inline</span> <span class="code-keyword">for</span> (<span class="code-num">0</span>..<span class="code-num">64</span>) |i| { <span class="code-comment">// i ∈ [0, 63]</span>
-        x ^= mask << i;
+        x ^= bitstring << i;
     }
     <span class="code-keyword">return</span> x;
 }</code>
