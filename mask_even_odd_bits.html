@@ -479,7 +479,7 @@
 
 <pre>
 <code><span class="code-keyword">fn</span> <span class="code-fn">pdep</span>(src: <span class="code-type">u64</span>, mask: <span class="code-type">u64</span>) <span class="code-type">u64</span> {
-    <span class="code-keyword">return</span> asm (<span class="code-str">"pdep %[mask], %[src], %[ret]"</span>
+    <span class="code-keyword">return</span> <span class="code-keyword">asm</span> (<span class="code-str">"pdep %[mask], %[src], %[ret]"</span>
         : [ret] <span class="code-str">"=r"</span> (-> <span class="code-type">u64</span>),
         : [src] <span class="code-str">"r"</span> (src),
           [mask] <span class="code-str">"r"</span> (mask),
