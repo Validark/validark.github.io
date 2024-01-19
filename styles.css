@@ -61,16 +61,20 @@ article {
 		width: 30cm;
 	}
 
+	/*
 	img,
 	article,
 	pre,
 	svg {
 		outline-width: 4pt;
 	}
+	*/
 
+	/*
 	body {
 		background-color: #a8a8a8;
 	}
+	*/
 }
 
 h1,
