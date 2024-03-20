@@ -85,7 +85,7 @@
 			<text class="post glyphy" x="191.5" y="15" style="font-size: smaller; text-decoration: none;">#</text>
 		</svg></a> -->
 
-		<p>On x86-64 machines, we have the <code>pdep</code> instruction which can do this in one go.</p>
+		<p>On x86-64 machines supporting the <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/X86_Bit_manipulation_instruction_set#BMI2_(Bit_Manipulation_Instruction_Set_2)">BMI2 extension</a> (Intel Haswell 2013+, AMD Excavator 2015+, <a target="_blank" rel="noopener noreferrer" href="https://uops.info/table.html?search=pdep&cb_lat=on&cb_tp=on&cb_uops=on&cb_ports=on&cb_ZEN2=on&cb_ZEN3=on&cb_ZEN4=on&cb_measurements=on&cb_doc=on&cb_bmi=on">only fast on AMD since Zen 3 2020+</a>), we can use the <code>pdep</code> instruction to do this in one instruction. This instruction is also present on <a target="_blank" rel="noopener noreferrer" href="https://www.ibm.com/docs/en/openxl-c-and-cpp-lop/17.1.1?topic=functions-vec-pdep">POWER machines starting with Power10</a>, and <a target="_blank" rel="noopener noreferrer" href="https://developer.arm.com/documentation/ddi0602/latest/SVE-Instructions/BDEP--Scatter-lower-bits-into-positions-selected-by-bitmask-">optionally aarch64 machines with SVE2 (called bdep)</a>.</p>
 
 		<p><code>pdep</code> works by iterating over each
 			bit from right to left in the second operand,
@@ -496,8 +496,7 @@
 </pre>
 
 
-<p>The <code>pdep</code> instruction is very efficient on recent x86-64 hardware. It has a latency of 3
-	cycles and you can start a new one each cycle even if there are others in-flight. Unfortunately, it's <a target="_blank" rel="noopener noreferrer" href="https://uops.info/table.html?search=pdep&cb_lat=on&cb_tp=on&cb_uops=on&cb_ports=on&cb_ZEN2=on&cb_ZEN3=on&cb_ZEN4=on&cb_measurements=on&cb_doc=on&cb_bmi=on">quite inefficient on AMD architectures earlier than Zen 3</a>, and won't work on non-x86-64 architectures (although this instruction might be added to RISC-V one day). Luckily, there is another way:</p>
+<p>The <code>pdep</code> instruction is very efficient on recent x86-64 hardware. It has a latency of 3	cycles and you can start a new one each cycle even if there are others in-flight. Unfortunately, it's <a target="_blank" rel="noopener noreferrer" href="https://uops.info/table.html?search=pdep&cb_lat=on&cb_tp=on&cb_uops=on&cb_ports=on&cb_ZEN2=on&cb_ZEN3=on&cb_ZEN4=on&cb_measurements=on&cb_doc=on&cb_bmi=on">quite inefficient on AMD architectures earlier than Zen 3</a>, and not supported on old machines, and support is still not planned for certain architectures (unfortunately the RISC-V <a href="https://docs.google.com/viewer?url=https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf"><span style="font-style: italic">Zbe</span> extension</a> with these instructions was not ratified into the <a target="_blank" rel="noopener noreferrer" href="https://github.com/riscv/riscv-bitmanip"><span style="font-style: italic">B</span> extension</a>). On such machines, you need an alternative method:</p>
 
 <a href="#prefix-xor" class="glyphicon"><h3 id="prefix-xor">Method 2: prefix-xor</h3></a>
 
