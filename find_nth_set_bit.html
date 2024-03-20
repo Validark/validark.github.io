@@ -65,8 +65,8 @@
 			<text class="post" x="0" y="20">How to extract every other set bit</text>
 			<text class="post" x="245" y="40" style="font-size: 65%">(June 30 2023)</text>
 		</svg> -->
-		<h4 style="text-align: center;">(July 18 2023)</h4>
-
+		<h4 style="text-align: center;">(Mar 19 2024)</h4>
+		<h5 style="text-align: center;">(original July 18 2023)</h5>
 		<p>The two fundamental operations of <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/Succinct_data_structure">succinct data structures</a> and approximate membership filters like the <a target="_blank" rel="noopener noreferrer" href="https://users.cs.utah.edu/~pandey/courses/cs6530/fall22/papers/htfilters/3035918.3035963.pdf">Counting Quotient Filter</a> are <code>select</code> and <code>rank</code>. <code>rank</code> simply returns the number of set bits (i.e. 1's) up to certain position and maps pretty trivially to a bitwise AND with a mask and a <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/Hamming_weight">popcount operation</a> (when operating at the level of a machine word). On the other hand, <code>select</code> returns the index of the <var>n</var>'th set bit, which unfortunately does not map cleanly to a single instruction on most instruction set architectures (ISA's). There are multiple ways to implement the <code>select</code> function, including binary subdivision, finding the target byte and using lookup tables, <a target="_blank" rel="noopener noreferrer" href="https://stackoverflow.com/questions/7669057/find-nth-set-bit-in-an-int">and more</a>. This article will cover the best x86-64 version as well as an implementation based on carryless multiplication.</p>
 
 		<figure id="intro-picture">
@@ -109,7 +109,8 @@
 			<text class="post glyphy" x="191.5" y="15" style="font-size: smaller; text-decoration: none;">#</text>
 		</svg></a> -->
 
-		<p>On x86-64 machines, we can use the <code>pdep</code> instruction to isolate the target bit.</p>
+
+		<p>On x86-64 machines supporting the <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/X86_Bit_manipulation_instruction_set#BMI2_(Bit_Manipulation_Instruction_Set_2)">BMI2 extension</a> (Intel Haswell 2013+, AMD Excavator 2015+, <a target="_blank" rel="noopener noreferrer" href="https://uops.info/table.html?search=pdep&cb_lat=on&cb_tp=on&cb_uops=on&cb_ports=on&cb_ZEN2=on&cb_ZEN3=on&cb_ZEN4=on&cb_measurements=on&cb_doc=on&cb_bmi=on">only fast on AMD since Zen 3 2020+</a>), we can use the <code>pdep</code> instruction to isolate the target bit. This instruction is also present on <a target="_blank" rel="noopener noreferrer" href="https://www.ibm.com/docs/en/openxl-c-and-cpp-lop/17.1.1?topic=functions-vec-pdep">POWER machines starting with Power10</a>, and <a target="_blank" rel="noopener noreferrer" href="https://developer.arm.com/documentation/ddi0602/latest/SVE-Instructions/BDEP--Scatter-lower-bits-into-positions-selected-by-bitmask-">optionally aarch64 machines with SVE2 (called bdep)</a>.</p>
 
 		<p><code>pdep</code> works by iterating over each
 			bit from right to left in the second operand,
@@ -604,8 +605,7 @@
 	<span class="code-instruction">ret</span></code>
 </pre> -->
 
-<p>The <code>pdep</code> instruction is very efficient on recent x86-64 hardware. It has a latency of 3
-	cycles and you can start a new one each cycle even if there are others in-flight. Unfortunately, it's <a target="_blank" rel="noopener noreferrer" href="https://uops.info/table.html?search=pdep&cb_lat=on&cb_tp=on&cb_uops=on&cb_ports=on&cb_ZEN2=on&cb_ZEN3=on&cb_ZEN4=on&cb_measurements=on&cb_doc=on&cb_bmi=on">quite inefficient on AMD architectures earlier than Zen 3</a>, and won't work on non-x86-64 architectures (although this instruction might be added to RISC-V one day). On such machines, you need an alternative method:</p>
+<p>The <code>pdep</code> instruction is very efficient on recent x86-64 hardware. It has a latency of 3	cycles and you can start a new one each cycle even if there are others in-flight. Unfortunately, it's <a target="_blank" rel="noopener noreferrer" href="https://uops.info/table.html?search=pdep&cb_lat=on&cb_tp=on&cb_uops=on&cb_ports=on&cb_ZEN2=on&cb_ZEN3=on&cb_ZEN4=on&cb_measurements=on&cb_doc=on&cb_bmi=on">quite inefficient on AMD architectures earlier than Zen 3</a>, and not supported on old machines, and support is still not planned for certain architectures (unfortunately the RISC-V <a href="https://docs.google.com/viewer?url=https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf"><span style="font-style: italic">Zbe</span> extension</a> with these instructions was not ratified into the <a target="_blank" rel="noopener noreferrer" href="https://github.com/riscv/riscv-bitmanip"><span style="font-style: italic">B</span> extension</a>). On such machines, you need an alternative method:</p>
 
 <a href="#prefix-xor" class="glyphicon"><h3 id="prefix-xor">Method 2: prefix-xor</h3></a>
 
@@ -862,9 +862,129 @@
 }</code></pre></li>
 </ol>
 
-<p>In both cases, the CPU should be able to work ahead and compute the extra value before the bitstring is ready to be carryless multiplied. However, I presume the first option may start its first carryless multiply 2 cycles later (<code>all_ones ^ (n & 1)</code>). I presume the second option takes one extra cycle per step because we have to perform an extra XOR after the carryless multiply. Therefore, I believe the first technique will be faster overall because we are planning on doing more than 2 iterations. I will update this post with a Godbolt link once <a target="_blank" rel="noopener noreferrer"style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/16435">#16435</a> is fixed.</p>
+<p>In both cases, the CPU should be able to work ahead and compute the extra value before the bitstring is ready to be carryless multiplied. However, I presume the first option may start its first carryless multiply 2 cycles later (<code>all_ones ^ (n & 1)</code>). I presume the second option takes one extra cycle per step because we have to perform an extra XOR after the carryless multiply. Therefore, I believe the first technique will be faster overall because we are planning on doing more than 2 iterations. <span style="text-decoration: line-through;">I will update this post with a Godbolt link once <a target="_blank" rel="noopener noreferrer"style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/16435">#16435</a> is fixed.</span></p>
 
 <p>I would be interested to hear from anyone with a real-world application running an implementation of <code>select</code> on something other than x86-64. If your machine supports a fast carryless multiply, this just might work for you! If carryless multiply can be computed in 3 cycles, I estimate the first version should take ~28 cycles and the second version should take ~32 cycles. It depends on how many set-up instructions are needed and whether your application can assert that you are passing in an <var>n</var> fewer than the population count of the bitstring (if not, add 1 to my estimates).</p>
+
+<p><span style="font-weight: bold;">Update:</span> <a target="_blank" rel="noopener noreferrer"style="text-decoration: none; font-weight: 500;" href="https://github.com/ziglang/zig/issues/16435">#16435</a> was fixed and I revisited this problem. It turns out that the carryless multiply solution was <a target="_blank" rel="noopener noreferrer" href="https://stackoverflow.com/a/77752515/11911769">pretty slow on my machine</a>. I have added the best non-pdep solution below.</p>
+
+<a href="#prefix-sum-popcount" class="glyphicon"><h3 id="prefix-sum-popcount">Method 3: prefix-sum-popcount</h3></a>
+
+<p>Another solution to this problem is to find the popcount of each byte, then the prefix-sum of those popcounts:</p>
+
+
+<figure id="intro-picture">
+
+	<svg version="1.1" width="100%" viewBox="0 -14 516 84"
+		xmlns="http://www.w3.org/2000/svg">
+		<text style="word-spacing: -0.25em; font-size: smaller" x="4" y="-1">n = 10</text>
+		<text x="123" y="-1" style="font-size: smaller;">11</text>
+		<text x="149" fill="#d14" y="-1" style="font-size: smaller;">10</text>
+		<text x="192" y="-1" style="font-size: smaller;">9</text>
+		<text x="204" y="-1" style="font-size: smaller;">8</text>
+		<text x="243" y="-1" style="font-size: smaller;">7</text>
+		<text x="294" y="-1" style="font-size: smaller;">6</text>
+		<text x="332" y="-1" style="font-size: smaller;">5</text>
+		<text x="369" y="-1" style="font-size: smaller;">4</text>
+		<text x="383" y="-1" style="font-size: smaller;">3</text>
+		<text x="397" y="-1" style="font-size: smaller;">2</text>
+		<text x="422" y="-1" style="font-size: smaller;">1</text>
+		<text x="473" y="-1" style="font-size: smaller;">0</text>
+
+
+		<text x="4" y="20">&nbsp;given:</text>
+		<text x="100" y="20">00<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>00<tspan class="_1">11</tspan>00<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>00<tspan class="_1">1</tspan>00<tspan class="_1">111</tspan>0<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>00</text>
+		<text x="4" y="40">popc's:</text>
+		<text x="100" y="44">└───3──┘└───3──┘└───4──┘└───2──┘</text>
+		<text x="4" y="60">prefix:</text>
+		<text x="100" y="64">└──12──┘└───9──┘└───6──┘└───2──┘</text>
+	</svg>
+
+	<figcaption>
+		Once we have the prefix-sum of the popcounts of the bytes, then finding the byte we are in is a matter of finding the first prefix-sum &ge; n. Note that the prefix-sum may appear backwards due to little-endianness, but is correct.
+	</figcaption>
+
+	</figure>
+
+	<p>We might find the byte containing bit <var>n</var> like so:</p>
+
+<pre><code><span class="code-keyword">fn</span> <span class="code-fn">findByteContainingBitN</span>(m: <span class="code-type">u64</span>, n: <span class="code-type">u6</span>) <span class="code-type">u4</span> {
+    <span class="code-keyword">const</span> v: <span class="code-builtin">@Vector</span>(<span class="code-num">8</span>, <span class="code-type">u8</span>) = <span class="code-builtin">@bitCast</span>(m);
+    <span class="code-keyword">const</span> prefix_sums = std.simd.prefixScan(.Add, <span class="code-num">1</span>, <span class="code-builtin">@popCount</span>(v));
+    <span class="code-keyword">const</span> broadcasted = <span class="code-builtin">@as</span>(<span class="code-builtin">@TypeOf</span>(v), <span class="code-builtin">@splat</span>(<span class="code-builtin">@as</span>(<span class="code-type">u8</span>, n)));
+    <span class="code-keyword">return</span> std.simd.countTrues(prefix_sums <= broadcasted);
+}</code></pre>
+
+	<p>Then, we take the prefix-sum of the byte before the one we are in, and subtract it from <var>n</var>. That is the number of bits into the containing byte we are in, which we can look up in a table.</p>
+
+<pre><code><span class="code-keyword">fn</span> <span class="code-fn">select</span>(m: <span class="code-type">u64</span>, n: <span class="code-type">u6</span>) ?<span class="code-type">u6</span> {
+    <span style="opacity: 0.36;"><span class="code-keyword">const</span> v: <span class="code-builtin">@Vector</span>(<span class="code-num">8</span>, <span class="code-type">u8</span>) = <span class="code-builtin">@bitCast</span>(m);
+    <span class="code-keyword">const</span> prefix_sums = std.simd.prefixScan(.Add, <span class="code-num">1</span>, <span class="code-builtin">@popCount</span>(v));
+    <span class="code-keyword">const</span> broadcasted = <span class="code-builtin">@as</span>(<span class="code-builtin">@TypeOf</span>(v), <span class="code-builtin">@splat</span>(<span class="code-builtin">@as</span>(<span class="code-type">u8</span>, n)));
+    <span class="code-keyword">const</span> byte_index: <span class="code-type">u4</span> = std.simd.countTrues(prefix_sums <= broadcasted);</span>
+    <span class="code-keyword">if</span> (byte_index == <span class="code-num">8</span>) <span class="code-keyword">return null</span>;
+
+    <span class="code-keyword">const</span> prev_prefix_sum = <span class="code-keyword">if</span> (byte_index == <span class="code-num">0</span>) <span class="code-num">0</span> <span class="code-keyword">else</span> prefix_sums[byte_index - <span class="code-num">1</span>];
+    <span class="code-keyword">return</span> <span class="code-num">8</span> * <span class="code-builtin">@as</span>(<span class="code-type">u6</span>, byte_index) +
+           lookup_table[v[byte_index]][n - prev_prefix_sum];
+}
+</code></pre>
+
+<p>Unfortunately, most ISA's outside of RISC-V do not have a prefix-sum instruction that operates on vectors, so the optimal solution is likely to be the SWAR implementation on most machines without a fast <code>pdep</code> instruction.</p>
+
+<p>Gog & Petri had this idea <a target="_blank" rel="noopener noreferrer" href="https://github.com/simongog/sdsl/blob/be00712861fa4d3a1acda9fe683894e5c06ade69/include/sdsl/bitmagic.hpp#L1069-L1100">many years ago</a>, improved a little by Sebastiano Vigna in <a target="_blank" rel="noopener noreferrer" href="https://github.com/foudrer/Sux/blob/fc451433f968ad4dd6c3be972260f82a41c512e6/select.h#L152-L166">foudrer/Sux</a> and Giuseppe Ottaviano introduced further improvements when creating <a target="_blank" rel="noopener noreferrer" href="https://github.com/ot/succinct/blob/669eebbdcaa0562028a22cb7c877e512e4f1210b/broadword.hpp#L86-L101">ot/succinct</a>. I made <a target="_blank" rel="noopener noreferrer" href="https://github.com/ot/succinct/pull/7">a few minor optimizations on top of Ottaviano's implementation</a>.</p>
+
+<pre><code><span style="font-size: 72%;"><span class="code-keyword">const</span> USE_POPCNT = <span class="code-keyword">switch</span> (builtin.cpu.arch) {
+    .aarch64_32, .aarch64_be, .aarch64 => <span class="code-keyword">false</span>,
+    .mips, .mips64, .mips64el, .mipsel => std.Target.mips.featureSetHas(builtin.cpu.features, .cnmips),
+    .powerpc, .powerpc64, .powerpc64le, .powerpcle => std.Target.powerpc.featureSetHas(builtin.cpu.features, .popcntd),
+    .s390x => std.Target.s390x.featureSetHas(builtin.cpu.features, .miscellaneous_extensions_3),
+    .ve => <span class="code-keyword">true</span>,
+    .avr => <span class="code-keyword">true</span>,
+    .msp430 => <span class="code-keyword">true</span>,
+    .riscv32, .riscv64 => std.Target.riscv.featureSetHas(builtin.cpu.features, .zbb),
+    .sparc, .sparc64, .sparcel => std.Target.sparc.featureSetHas(builtin.cpu.features, .popc),
+    .wasm32, .wasm64 => <span class="code-keyword">true</span>,
+    .x86, .x86_64 => std.Target.x86.featureSetHas(builtin.cpu.features, .popcnt),
+    <span class="code-keyword">else</span> => <span class="code-keyword">false</span>,
+};
+</span>
+<span class="code-keyword">fn</span> select(m: <span class="code-type">u64</span>, n: <span class="code-type">u6</span>) <span class="code-type">u8</span> {
+    <span class="code-comment">// Same trick as <a target="_blank" rel="noopener noreferrer" href="https://www.chessprogramming.org/Population_Count#SWAR-Popcount">https://www.chessprogramming.org/Population_Count#SWAR-Popcount</a></span>
+    <span class="code-comment">// except we keep all the prefix-sums</span>
+    <span class="code-keyword">const</span> ones: <span class="code-type">u64</span> = <span class="code-num">0x0101010101010101</span>;
+    <span class="code-keyword">var</span> i = m;
+    i -= (i >> <span class="code-num">1</span>) & <span class="code-num">0x5555555555555555</span>;
+    i = (i & <span class="code-num">0x3333333333333333</span>) + ((i >> <span class="code-num">2</span>) & <span class="code-num">0x3333333333333333</span>);
+    <span class="code-comment">// any time you see `* ones`, that is finding the inclusive prefix-sum</span>
+    <span class="code-keyword">const</span> prefix_sums = (((i + (i >> <span class="code-num">4</span>)) & <span class="code-num">0x0F0F0F0F0F0F0F0F</span>) * ones);
+
+    <span class="code-comment">// Produce a mask where there is a bit in each byte indicating whether</span>
+    <span class="code-comment">// a particular prefix-sum is higher than `n`</span>
+    <span class="code-keyword">const</span> broadcasted = ones * (<span class="code-builtin">@as</span>(<span class="code-type">u64</span>, n) | <span class="code-num">0x80</span>);
+    <span class="code-keyword">const</span> isolate = ones * <span class="code-keyword">if</span> (USE_POPCNT) <span class="code-num">0x80</span> <span class="code-keyword">else</span> <span class="code-num">0x01</span>;
+    <span class="code-keyword">const</span> mask = ((broadcasted - prefix_sums) >> <span class="code-keyword">if</span> (USE_POPCNT) <span class="code-num">0</span> <span class="code-keyword">else</span> <span class="code-num">7</span>) & isolate;
+    <span class="code-keyword">if</span> (mask == isolate) <span class="code-keyword">return</span> <span class="code-num">64</span>; <span class="code-comment">// there is no n'th bit!</span>
+
+    <span class="code-comment">// find the number of bytes with insufficient popcount-prefix-sums</span>
+    <span class="code-comment">// shift left by 3 to get the bit-offset</span>
+    <span class="code-keyword">const</span> bit_offset: <span class="code-type">u6</span> = <span class="code-keyword">if</span> (USE_POPCNT)
+        <span class="code-builtin">@intCast</span>(<span class="code-builtin">@popCount</span>(mask) << <span class="code-num">3</span>)
+    <span class="code-keyword">else</span>
+        <span class="code-comment">// it is safe to do `>> 53` instead of `>> 56 << 3` because the max `mask` is </span>
+        <span class="code-comment">// 0b00001000_00000111_00000110_00000101_00000100_00000011_00000010_00000001</span>
+        <span class="code-comment">//  Therefore <span style="top: -0.25em;     position: relative;
+			vertical-align: baseline;">^^^</span> these bits are guaranteed to be 0</span>
+        <span class="code-builtin">@intCast</span>((mask * ones) >> <span class="code-num">53</span>);
+
+    <span class="code-keyword">const</span> prefix_sum: <span class="code-type">u6</span> = <span class="code-builtin">@truncate</span>(prefix_sums << <span class="code-num">8</span> >> bit_offset);
+    <span class="code-keyword">const</span> target_byte: <span class="code-type">u8</span> = <span class="code-builtin">@truncate</span>(m >> bit_offset);
+    <span class="code-keyword">const</span> n_for_target_byte: <span class="code-type">u3</span> = <span class="code-builtin">@intCast</span>(n - prefix_sum);
+
+    <span class="code-keyword">return</span> lookup_table[target_byte][n_for_target_byte] + bit_offset;
+}</code></pre>
+
+<p>The full code is available <a target="_blank" rel="noopener noreferrer" href="https://gist.github.com/Validark/1c49b2b00ff930df76a3ee1d22f18244">here</a>. <a target="_blank" rel="noopener noreferrer" href="https://gist.github.com/Validark/eded47a57944e4a0357612bda3c51871">Here is my test bench</a>. <a target="_blank" rel="noopener noreferrer" href="https://zig.godbolt.org/z/491ffTjrr">Here is a godbolt playground</a>.</p>
 
 <p>Happy hacking!<br>&horbar;&#x202F;Validark</p>
 
@@ -882,3 +1002,24 @@
 </body>
 
 </html>
+
+
+<!-- fn selectByte(m: u8, n: u3) u4 {
+    const ones: u64 = 0x0101010101010101;
+    const unique_bytes: u64 = 0x8040_2010_0804_0201;
+    const unique_bytes_diff_from_msb = (ones * 0x80) - unique_bytes;
+    const prefix_sums = (((((m * ones) & unique_bytes) + unique_bytes_diff_from_msb) >> 7) & ones) * ones;
+
+    const broadcasted = ones * (@as(u64, n) | 0x80);
+    const isolate = ones * if (USE_POPCNT) 0x80 else 0x01;
+    const mask = (((broadcasted - prefix_sums) >> if (USE_POPCNT) 0 else 7) & isolate);
+
+    if (mask == isolate) return 8;
+
+    const bit_index: u3 = if (USE_POPCNT)
+        @intCast(@popCount(mask))
+    else
+        @intCast((mask * ones) >> 56);
+
+    return bit_index;
+} -->

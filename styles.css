@@ -81,6 +81,7 @@ h1,
 h2,
 h3,
 h4,
+h5,
 .post {
 	font-family: 'Press Start 2P', cursive;
 	text-decoration: underline;
@@ -104,6 +105,10 @@ h3 {
 
 h4 {
 	font-size: 16pt;
+}
+
+h5 {
+	font-size: 12pt;
 }
 
 div,
@@ -145,7 +150,8 @@ a,
 h1,
 h2,
 h3,
-h4 {
+h4,
+h5 {
 	color: black;
 }
 
@@ -179,6 +185,7 @@ p,
 pre,
 h3,
 h4,
+h5,
 li {
 	margin-top: 1.5em;
 	margin-bottom: 1.5em;
@@ -189,7 +196,8 @@ li {
 	margin-bottom: 0;
 }
 
-#title+h4 {
+#title+h4,
+h4+h5 {
 	margin-top: 0em;
 	margin-bottom: 0;
 }
@@ -232,6 +240,7 @@ a+p {
 pre {
 	background-color: rgb(240, 241, 242);
 	padding: 0.5em;
+	overflow-x: auto;
 }
 
 code {
@@ -274,7 +283,8 @@ figcaption code {
 	font-weight: bold;
 }
 
-.code-comment {
+.code-comment,
+.code-comment a:not(:hover) {
 	color: #777;
 	font-style: italic;
 }
@@ -376,20 +386,50 @@ figcaption code {
 @media only screen and (max-width: 1189px) {
 
 	p,
-	h1,
-	h2,
-	h3,
-	h4,
 	ol li::marker {
-		font-size: 250% !important;
+		font-size: calc(2 * 20pt);
 	}
 
-	pre>code {
-		font-size: 175% !important;
+	a.glyphicon:hover>h3:before,
+	a.glyphicon:hover>h3:after {
+		font-size: calc(2 * 21pt);
+	}
+
+	h1 {
+		font-size: calc(2 * 24pt);
+	}
+
+	h2 {
+		font-size: calc(2 * 20pt);
+	}
+
+	h3 {
+		font-size: calc(2 * 20pt);
+	}
+
+	h4 {
+		font-size: calc(2 * 16pt);
+	}
+
+	h5 {
+		font-size: calc(2 * 12pt);
+	}
+
+	p {
+		font-size: calc(2 * 20pt);
+	}
+
+	pre>code,
+	code {
+		font-size: calc(2 * 14pt);
 	}
 
 	a.post {
-		font-size: 200% !important;
+		font-size: calc(1.5 * 14pt);
+	}
+
+	figcaption {
+		font-size: calc(2 * 16pt);
 	}
 
 	article {
