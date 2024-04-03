@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=0.35">
+	<meta name="description" content="This article explains efficient value smearing in simd.">
+	<title>Value smearing in simd</title>
+	<link rel="preload" href="./fonts/Press_Start_2P/PressStart2P-Regular.ttf" as="font" type="font/ttf">
+	<link rel="preload" href="./fonts/Ysabeau_Office/static/YsabeauOffice-Regular.ttf" as="font" type="font/ttf">
+	<link rel="stylesheet" href="https://necolas.github.io/normalize.css/8.0.1/normalize.css">
+	<link rel="stylesheet" href="./styles.css">
+
+	<link rel="apple-touch-icon" sizes="180x180" href="./DynSDT/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="./DynSDT/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./DynSDT/favicon-16x16.png">
+	<link rel="manifest" href="./DynSDT/site.webmanifest">
+</head>
+
+<body>
+	<article>
+		<style>
+			text {
+				font-family: "JetBrains Mono", monospace;
+				font-size: 11pt;
+			}
+
+			text.nums {
+				letter-spacing: 3.75pt;
+			}
+
+			tspan._1 {
+				fill: #d14;
+			}
+
+			figure#intro-picture text,
+			figure#prefix-xor-recursive-visualization text,
+			svg#prefix-xor-svg text {
+				font-size: 16pt;
+			}
+
+			text.num2, text.xor {
+				font-family: "JetBrains Mono", monospace;
+				font-size: 9pt;
+			}
+
+			text.xor {
+				font-size: 8pt;
+			}
+		</style>
+		<center style="display: flex;">
+			<a aria-label="Validark's GitHub profile" target="_blank" rel="noopener noreferrer" href="https://github.com/Validark"><img
+					width="133.33333333"
+					height="133.33333333"
+					alt="Validark's logo which has a V:/ in the center"
+					style="margin-top: 16pt; border-radius:50%; width: 100pt; height: 100pt; margin-right: 24pt; margin-top: -13pt;"
+					src="https://avatars.githubusercontent.com/u/15217173?v=4" /></a>
+			<h1><a style="text-decoration: none;" href="./index.html">V:/dev</a></h1>
+		</center>
+
+		<h2 id="title" style="text-align: center;">Value smearing in simd</h2>
+		<h4 style="text-align: center;">(April 3 2024)</h4>
+
+
+		<p>On r/simd, <a href="https://www.reddit.com/user/-Y0-/">u/-Y0-</a> <a href="https://www.reddit.com/r/simd/comments/1ag267y/applying_simd_to_counting_columns_in_yaml/">posted about a subproblem of YAML parsing which is calculating the column of each character</a>, which is the number of characters since the last newline. For example:</p>
+
+		<figure>
+			<svg version="1.1" width="100%" viewBox="0 0 400 45" xmlns="http://www.w3.org/2000/svg">
+				<text x="5" y="15" style="font-size: smaller;">given: abc*defg*ij*lmno (pretend * is a newline)</text>
+				<text x="5" y="35" style="font-size: smaller;">ouput: 012-0123-01-0123</text>
+			</svg>
+		</figure>
+
+		<blockquote class="reddit-embed-bq" data-embed-showtitle="true" data-embed-snippet="2_0_373" data-embed-showedits="false" data-embed-created="2024-04-03T23:22:39.850Z" data-embed-height="349"><a href="https://www.reddit.com/r/simd/comments/1ag267y/comment/kok8ind/">Comment</a><br> by<a href="https://www.reddit.com/user/-Y0-/">u/-Y0-</a> from discussion<a href="https://www.reddit.com/r/simd/comments/1ag267y/applying_simd_to_counting_columns_in_yaml/"><no value=""></no></a><br> in<a href="https://www.reddit.com/r/simd/">simd</a></blockquote><script async="" src="https://embed.reddit.com/widgets.js" charset="UTF-8"></script>
+
+<!-- This is the goal:
+|0|1|2|\n|0|1|2|3|\n|0|1|\n|0|1|2|3|
+  abc*defg*ij*lmno
+  012-0123-01-0123
+  ...X....X..X.... (newlines are in X spots)
+  0123456789ABCDEF
+- 00033333888BBBBB =>
+  0123401234012345 -->
+
+<!--
+		| |a|b|:| |\n| | | |c| // Utf8 bytes separated by pipes
+		|0|1|2|3|4| ?|0|1|2|3| // running tally of columns  that resets on newline (? denotes I don't care about it, so 0 or 5 would work) -->
+
+<p>Happy hacking!<br>&horbar;&#x202F;Validark</p>
+
+</article>
+
+<!-- <script src="https://utteranc.es/client.js"
+        repo="validark/validark.github.io"
+        issue-term="title"
+        label="comments section"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script> -->
+
+</body>
+
+</html>
