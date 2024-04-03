@@ -65,7 +65,7 @@
 			<text class="post" x="0" y="20">How to extract every other set bit</text>
 			<text class="post" x="245" y="40" style="font-size: 65%">(June 30 2023)</text>
 		</svg> -->
-		<h4 style="text-align: center;">(Mar 19 2024)</h4>
+		<h4 style="text-align: center;">(March 19 2024)</h4>
 		<h5 style="text-align: center;">(original July 18 2023)</h5>
 		<p>The two fundamental operations of <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/Succinct_data_structure">succinct data structures</a> and approximate membership filters like the <a target="_blank" rel="noopener noreferrer" href="https://users.cs.utah.edu/~pandey/courses/cs6530/fall22/papers/htfilters/3035918.3035963.pdf">Counting Quotient Filter</a> are <code>select</code> and <code>rank</code>. <code>rank</code> simply returns the number of set bits (i.e. 1's) up to certain position and maps pretty trivially to a bitwise AND with a mask and a <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/Hamming_weight">popcount operation</a> (when operating at the level of a machine word). On the other hand, <code>select</code> returns the index of the <var>n</var>'th set bit, which unfortunately does not map cleanly to a single instruction on most instruction set architectures (ISA's). There are multiple ways to implement the <code>select</code> function, including binary subdivision, finding the target byte and using lookup tables, <a target="_blank" rel="noopener noreferrer" href="https://stackoverflow.com/questions/7669057/find-nth-set-bit-in-an-int">and more</a>. This article will cover the best x86-64 version as well as an implementation based on carryless multiplication.</p>
 
