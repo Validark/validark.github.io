@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=0.35">
+	<meta name="description" content="An article on how to how to extract every other set bit. In other words, how to mask even set bits or how to mask odd set bits. Every other 1 in a bitstring is isolated.">
+	<title>1-2-3 Skip Lists are priority queues with Θ(1) extract-min operations</title>
+
+	<link rel="preload" href="./fonts/Press_Start_2P/PressStart2P-Regular.ttf" as="font" type="font/ttf">
+
+	<link rel="preload" href="./fonts/Ysabeau_Office/static/YsabeauOffice-Regular.ttf" as="font" type="font/ttf">
+
+	<link rel="stylesheet" href="https://necolas.github.io/normalize.css/8.0.1/normalize.css">
+	<link rel="stylesheet" href="./styles.css">
+	<style>
+		text {
+			font-family: "JetBrains Mono", monospace;
+			font-size: 11pt;
+		}
+
+		text.nums {
+			letter-spacing: 3.75pt;
+		}
+
+		tspan._1 {
+			fill: #d14;
+		}
+
+		svg#intro-pic text,
+		svg#prefix-xor text {
+			font-size: 16pt;
+		}
+
+		text.num2, text.xor {
+			font-family: "JetBrains Mono", monospace;
+			font-size: 9pt;
+		}
+
+		text.xor {
+			font-size: 8pt;
+		}
+	</style>
+
+	<link rel="apple-touch-icon" sizes="180x180" href="./DynSDT/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="./DynSDT/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./DynSDT/favicon-16x16.png">
+	<link rel="manifest" href="./DynSDT/site.webmanifest">
+</head>
+
+<body>
+	<article>
+		<center style="display: flex;">
+			<a aria-label="Validark's GitHub profile" target="_blank" rel="noopener noreferrer" href="https://github.com/Validark"><img
+					width="133.33333333"
+					height="133.33333333"
+					alt="Validark's logo which has a V:/ in the center"
+					style="margin-top: 16pt; border-radius:50%; width: 100pt; height: 100pt; margin-right: 24pt; margin-top: -13pt;"
+					src="https://avatars.githubusercontent.com/u/15217173?v=4" /></a>
+			<h1><a style="text-decoration: none;" href="./index.html">V:/dev</a>
+				<!-- <a style="text-decoration: none;">/mask_even_odd_bits</a> -->
+			</h1>
+		</center>
+
+		<h2 id="title" style="text-align: center;">1-2-3 Skip Lists are priority queues with Θ(1) extract-min operations</h2>
+		<!-- <svg id="title" style="margin-top: 1.5em" id="title" viewBox="0 0 635 45">
+			<text class="post" x="0" y="20">How to extract every other set bit</text>
+			<text class="post" x="245" y="40" style="font-size: 65%">(June 30 2023)</text>
+		</svg> -->
+		<h4 style="text-align: center;">(Jul 6 2023)</h4>
+
+
+		<p>In 1992, <a target="_blank" rel="noopener noreferrer" href="https://www.ic.unicamp.br/~celio/peer2peer/skip-net-graph/deterministic-skip-lists-munro.pdf">a paper</a> by Munro, Papadakis, Sedgewick introduced the deterministic 1-2-3 Skip List as an alternative to the <a target="_blank" rel="noopener noreferrer" href="https://en.wikipedia.org/wiki/Skip_list">conventional probabalistic structure</a>. They noted that it can be viewed as a variant of the binary search tree, and that their provided search algorithm is equivalent to the one used on binary search trees. However, it can also be used as a priority queue, as it has <span class="theta">Θ</span>(log n) insertions and <span class="theta">Θ</span>(1) amortized extract-min operations. Although not discussed in the original paper, we can achieve constant time extractions by relaxing the structure's invariant slightly.</p>
+
+		<a href="#description" class="glyphicon"><h3 id="description">Section 1: Description</h3></a>
+
+<p>The 1-2-3 Skip List is a linked list augmented with "express lanes" that basically allow one to perform a binary search on it. The invariant maintained in this structure is that only 1, 2, or 3 elements are allowed between each express stop (on the layer underneath), depicted below:</p>
+
+		<pre><code>H------------------------------------15----------------------------------------------E
+H-----------5---------10-------------15----------------------23----------------------E
+H-------3---5-----8---10----12-------15----------19----21----23----25----------29----E
+H-0-1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18-19-20-21-22-23-24-25-26-27-28-29-30-E</code></pre>
+
+<p>As a special case, we allow 0 elements to be between the Head and the first node so we don't have to do rebalancing during Pop() operations. This particular invariant has the nice property that we don't need to keep track of the position in each layer where we descend in order to promote express stops to higher lanes. Instead, we always promote the middle element when we see a set of 3 elements between express lanes as we descend to lower lanes. (tldr, no stack needed, promote the middle of 3 as we descend). This is an "array implementation", meaning each node is a dynamic array of pointers and a value.</p>
+
+		<p>Happy hacking!<br>&horbar;&#x202F;Validark</p>
+
+</article>
+
+<style>
+	.theta {
+		font-size: 1.2em;
+		vertical-align: -0.1em;
+		font-style: italic;
+		font-family: Georgia, 'Times New Roman', Times, serif;
+	}
+</style>
+
+<!-- <script src="https://utteranc.es/client.js"
+        repo="validark/validark.github.io"
+        issue-term="title"
+        label="comments section"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script> -->
+
+</body>
+
+
+<script>
+	// window.location.replace("https://github.com/Validark");
+</script>
+
+</html>

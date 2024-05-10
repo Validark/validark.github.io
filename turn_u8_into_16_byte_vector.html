@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=0.35">
+	<meta name="description" content="An article on how to how to extract every other set bit. In other words, how to mask even set bits or how to mask odd set bits. Every other 1 in a bitstring is isolated.">
+	<title>How to extract every other set bit from a bitstring</title>
+	<link rel="preload" href="./fonts/Press_Start_2P/PressStart2P-Regular.ttf" as="font" type="font/ttf">
+	<link rel="preload" href="./fonts/Ysabeau_Office/static/YsabeauOffice-Regular.ttf" as="font" type="font/ttf">
+	<link rel="stylesheet" href="https://necolas.github.io/normalize.css/8.0.1/normalize.css">
+	<link rel="stylesheet" href="./styles.css">
+
+	<link rel="apple-touch-icon" sizes="180x180" href="./DynSDT/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="./DynSDT/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./DynSDT/favicon-16x16.png">
+	<link rel="manifest" href="./DynSDT/site.webmanifest">
+</head>
+
+<body>
+	<article>
+		<style>
+			text {
+				font-family: "JetBrains Mono", monospace;
+				font-size: 11pt;
+			}
+
+			text.nums {
+				/* letter-spacing: 3.75pt; */
+			}
+
+			tspan._1 {
+				fill: #d14;
+			}
+
+			svg#intro-pic text,
+			svg#prefix-xor-svg text {
+				font-size: 16pt;
+			}
+
+			text.num2, text.xor {
+				font-family: "JetBrains Mono", monospace;
+				font-size: 9pt;
+			}
+
+			text.xor {
+				font-size: 8pt;
+			}
+		</style>
+
+		<figure id="pdep-illustration">
+			<svg onmousemove="clickSVG(evt)" version="1.1" width="100%" viewBox="0 6 570 192" xmlns="http://www.w3.org/2000/svg">
+				<!-- <rect x="1" y="1" width="980" height="198"
+					stroke="black" fill="transparent"
+					stroke-width="2" /> -->
+
+				<text id="bits8" class="nums" x="65.75" y="34" style="letter-spacing: 61.6px">00<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan><tspan class="_1">1</tspan><tspan class="_1">1</tspan>0</text>
+
+				<text class="nums" x="4" y="48">0000<tspan class="_1">1</tspan>0000000000000000000000000000000<tspan class="_1">1</tspan>000000000000000000000000000</text>
+
+				<!-- <text class="nums" x="76" y="50">00<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>00<tspan class="_1">11</tspan>00<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>00<tspan class="_1">1</tspan>00<tspan class="_1">111</tspan>0<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>00</text> -->
+
+				<!-- <text class="nums" x="76"
+					y="50">00<tspan class="_1">1</tspan>0<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>0000<tspan class="_1">1</tspan>00000000<tspan class="_1">1</tspan>000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000<tspan class="_1">1</tspan>000000</text> -->
+
+					<!-- 108 -->
+					<!-- 14 -->
+				<line id="line1" x1="481" x2="507" y1="52" y2="178" stroke="#000" stroke-width="2"></line>
+				<line id="line2" x1="426" x2="494" y1="52" y2="178" stroke="#000" stroke-width="2"></line>
+				<line id="line3" x1="398" x2="481" y1="52" y2="178" stroke="#000" stroke-width="2"></line>
+				<line id="line4" x1="385" x2="467" y1="52" y2="178" stroke="#000" stroke-width="2"></line>
+				<line id="line5" x1="370" x2="453" y1="52" y2="178" stroke="#000" stroke-width="2"></line>
+				<line id="line6" x1="329" x2="439" y1="52" y2="178" stroke="#000" stroke-width="2"></line>
+				<line id="line7" x1="287" x2="425" y1="52" y2="178" stroke="#000" stroke-width="2"></line>
+				<line id="line8" x1="232" x2="411" y1="52" y2="178" stroke="#000" stroke-width="2"></line>
+				<line id="line9" x1="191" x2="397" y1="52" y2="178" stroke="#000" stroke-width="2"></line>
+				<line id="line10" x1="177" x2="383" y1="52" y2="178" stroke="#000" stroke-width="2"></line>
+				<line id="line11" x1="135" x2="369" y1="52" y2="178" stroke="#d14" stroke-width="2"></line>
+				<line id="line12" x1="107" x2="355" y1="52" y2="178" stroke="#000" stroke-width="2"></line>
+
+				<!-- // -0.48em -->
+
+					<style>
+					#bits8 {
+						animation: bits8 5s ease 1s forwards forwards normal;
+					}
+					@keyframes bits8 {
+						0% {
+							letter-spacing: -0.48em;
+						}
+
+						100% {
+							letter-spacing: 61.6px;
+						}
+					}
+				</style>
+
+
+				<text x="4" y="190">&nbsp;&nbsp;op 1:</text>
+				<text class="nums" x="76" y="190">000000000000000000000<tspan class="_1">1</tspan>0000000000</text>
+			</svg>
+
+			<figcaption>000 000</figcaption>
+
+			<style>
+				svg:hover {
+					cursor: crosshair;
+				}
+			</style>
+			<script>
+				const [svg] = document.getElementsByTagName("svg");
+				const [figcaption] = document.getElementsByTagName("figcaption");
+				const [,,viewBoxWidth, viewBoxHeight] = svg.getAttribute("viewBox").split(' ').map(x => +x);
+
+				function clickSVG({ offsetX, offsetY }) {
+					const width = svg.width.baseVal.value;
+					const height = svg.height.baseVal.value;
+
+					figcaption.innerText =
+					Math.max(0, Math.floor(offsetX / width * viewBoxWidth)).toString().padStart(3, '0') + " " +
+					Math.max(0, 12+Math.floor(offsetY / height * viewBoxHeight)).toString().padStart(3, '0');
+				}
+			</script>
+		</figure>
+
+
+</article>
+
+
+</body>
+
+
+</html>
