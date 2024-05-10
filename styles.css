@@ -313,14 +313,18 @@ figcaption code {
 
 blockquote {
 	margin: 0;
+	margin-left: 1in;
+	margin-right: 1in;
 }
 
 blockquote p {
-	padding-left: 1in;
-	padding-right: 1in;
-
+	/* border-radius: 16pt; */
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+	padding-left: 1em;
+	border: 3px double black;
+	padding-right: 1em;
 	background: #eee;
-	border-radius: 5px;
 }
 
 blockquote p::before {
@@ -484,5 +488,9 @@ text.xor {
 	article {
 		padding-bottom: 0cm;
 		padding-top: 1cm;
+	}
+
+	blockquote {
+		margin: 0;
 	}
 }
