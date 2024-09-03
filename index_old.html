@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=0.35">
+	<meta name="description" content="The home page of Validark's dev blog, containing posts and demos.">
+	<title>Validark's dev blog</title>
+
+	<link rel="preload" href="./fonts/Press_Start_2P/PressStart2P-Regular.ttf" as="font" type="font/ttf">
+	<link rel="prefetch" href="./fonts/Ysabeau_Office/static/YsabeauOffice-Regular.ttf" as="font" type="font/ttf">
+	<link rel="stylesheet" href="https://necolas.github.io/normalize.css/8.0.1/normalize.css">
+	<link rel="stylesheet" href="./styles.css">
+
+	<link rel="apple-touch-icon" sizes="180x180" href="./DynSDT/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="./DynSDT/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./DynSDT/favicon-16x16.png">
+	<link rel="manifest" href="./DynSDT/site.webmanifest">
+</head>
+
+<body>
+	<script>const prerenders = [];</script>
+	<article>
+		<center style="display: flex;">
+			<a target="_blank" rel="noopener noreferrer"href="https://github.com/Validark"><img
+					style="margin-top: 16pt; border-radius:50%; width: 100pt; height: 100pt; margin-right: 24pt; margin-top: -13pt;"
+					src="https://avatars.githubusercontent.com/u/15217173?v=4" /></a>
+			<h1><a style="text-decoration: none;" href="./index.html">V:/dev</a></h1>
+		</center>
+
+		<h2 style="margin-top: 28pt;">Posts:</h2>
+
+		<div>
+			<a class="post" href="./find_nth_set_bit.html">(March 19 2024) How to find the <var style="font-style: normal;">n</var>'th set bit in a bitstring <span style="font-size: 70%;">(original July 18 2023)</span></a>
+			<script>prerenders.push("./find_nth_set_bit.html")</script>
+			<noscript><link rel="prerender" href="./find_nth_set_bit.html"></noscript>
+		</div>
+
+		<div>
+			<a class="post" href="./mask_even_odd_bits.html">(June 30 2023) How to extract every other set bit from a bitstring</a>
+			<script>prerenders.push("./mask_even_odd_bits.html")</script>
+			<noscript><link rel="prerender" href="./mask_even_odd_bits.html"></noscript>
+		</div>
+
+		<h2 style="margin-top: 28pt;">Papers:</h2>
+
+		<div>
+			<a target="_blank" rel="noopener noreferrer"class="post"
+				href="https://validark.github.io/DynSDT">(2022)
+				Heap-like
+				Dynamic Score-Decomposed Tries for
+				Top-k Autocomplete</a>
+		</div>
+
+		<h2 style="margin-top: 28pt;">Demos:</h2>
+
+		<div>
+			<a target="_blank" rel="noopener noreferrer"class="post"
+				href="https://validark.github.io/DynSDT/demo/">(Desktop
+				only) DynSDT
+				interactive explanation</a>
+		</div>
+
+		<div>
+			<a target="_blank" rel="noopener noreferrer"class="post"
+				href="https://validark.github.io/DynSDT/web-autocomplete/">(Desktop
+				only) DynSDT:
+				Real-time client-side autocomplete
+				engine with aliasing </a>
+		</div>
+	</article>
+</body>
+
+
+<script>
+	// This code adds prerender elements after the page loads.
+	window.onload = function() {
+		for (let i = 0; i < prerenders.length; i++) {
+			var prerender = document.createElement("link");
+			prerender.rel = "prerender";
+			prerender.href = prerenders[i];
+			document.body.appendChild(prerender);
+		}
+	}
+
+	// This makes it so we load the next page on mousedown rather than a click (mousedown+up)
+	// Makes it feel just a tiny bit faster :)
+	for (const a of document.getElementsByTagName("a")) {
+		a.addEventListener("mousedown", e => window.location.assign(a.href));
+	}
+</script>
+</html>
