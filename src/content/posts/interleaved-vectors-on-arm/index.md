@@ -200,27 +200,27 @@ This is a lot cleaner! I show and explain how this routine works [here](https://
 
 Initially, I believed we could only do algorithms on interleaved vectors where order didn't change. However, while working on the UTF8 validator for my [Accelerated-Zig-Parser](https://github.com/Validark/Accelerated-Zig-Parser), I realized we can emulate element shifts in interleaved space.
 
-Let's say we have a vector where each byte contains its own index, then shift the elements right by one, shifting in `-1`. On normal vectors, this looks like so (only showing first 16 bytes of the vector due to space constraints):
+Let's say we have a vector where each byte contains its own index. Next, we shift the elements right by one, shifting in `-1`. On normal vectors, this looks like so (only showing first 16 bytes of the vector due to space constraints):
 
 ![](shift-interleaved-dark.svg)
 
-This is useful for UTF8 validation because we want to match up the first, second, third, and fourth bytes of a UTF8 codepoint.
-Hence if we do two more such shifts, shifting in `-2`, and `-3`, we can line up our vectors like so:
+This aligns the bytes such that each pair of contiguous bytes is now aligned column-wise. This allows us to validate 2-byte UTF8 codepoints efficiently. To properly validate 3 and 4 byte codepoints, we will need to do two more such shifts, shifting in `-2`, and `-3`:
 
 ![](shift-interleaved-2-dark.svg)
 
-From top to bottom, I will refer to the vectors as `prev0`, `prev1`, `prev2`, and `prev3`.
-With the way these four vectors are aligned, we can match the 4th byte of a 4-byte sequence in `prev0`, the 3rd byte in `prev1`, the 2nd byte in `prev2`, and the 1st byte in `prev3`.
+In this article, I will refer to the main vectors as `prev0` (the top vector in the previous diagram), and the vectors containing the previous bytes, relative to `prev0`, as `prev1`, `prev2`, and `prev3`.
 
-Now, looking again at the interleaved vectors given by `ld4`, think about how we might find the relative `prev1`, `prev2`, and `prev3` of each of the following vectors:
+For UTF8 validation, we can match the 4th byte of a 4-byte sequence in `prev0`, the 3rd byte in `prev1`, the 2nd byte in `prev2`, and the 1st byte in `prev3` (because the byte-order increases by 1 as we move up a column).
+
+Now, looking again at the interleaved vectors given by `ld4`, think about how we might find the relative `prev1`, `prev2`, and `prev3` of each of the following vectors (each one is a `prev0`):
 
 ![](./interleaved-vector-dark.svg)
 
-Here is the `prev1` for each of the `prev0` vectors above:
+Here are the `prev1` vectors relative to each of the vectors above:
 
 ![](./interleaved-vector-2-dark.svg)
 
-Hopefully it is obvious that all we did is subtract one from each index. As you can see, the lower 3 vectors we already had! It's only the uppermost vector which needs to be computed, by shifting in `-1` to the vector that starts with `3`, `7`, `11`, `15`, etc.
+Hopefully it is obvious that all we did is subtract one from each index from the perspective of byte-order. As you can see, the lower 3 vectors were already created by `ld4`! It's only the uppermost vector which needs to be computed, by shifting in `-1` to the vector that starts with `3`, `7`, `11`, `15`, etc.
 
 That means we can get the semantics of a 64-byte shift by 1 by only shifting a single 16-byte vector!
 
@@ -234,7 +234,9 @@ We can do the same thing to produce the `prev3` vectors. The only additional com
 
 ![](interleaved-vectors-5-dark.svg)
 
-In the above diagram, the `prev1` relative to each of the bottom 4 vectors is the one above it, the `prev2` relative to each of the bottom 4 vectors is the one 2 above it, and the `prev3` relative to each of the bottom 4 vectors is the one 3 above it. With only 3 vector shifts, and a total of 7 vectors in play, we can operate on all the shifted vectors we need for a 64-byte chunk. Compare this to needing to produce a separate `prev1`, `prev2`, and `prev3` for each 16-byte vector, which takes a total of 12 vector shifts for 64 bytes. That's up to 16 vectors in play simulaneously.
+In the above diagram, each of the bottom 4 vectors are a `prev0` vector. The `prev1` vector, relative to each `prev0` vector, is the one above it, the `prev2` is the one 2 rows above, and the `prev3` is 3 rows above, for each `prev0` vector.
+
+With only 3 vector shifts, and a total of 7 vectors in play, we can operate on all the shifted vectors we need for a 64-byte chunk. Compare this to needing to produce a separate `prev1`, `prev2`, and `prev3` for each 16-byte vector, which takes a total of 12 vector shifts for 64 bytes.
 
 Using this intuition, we can write a function which emulates the semantics of a vector shift by any compile-time known amount on normally-ordered vectors, but for interleaved vectors! This removes the restriction of only using this vector interleaving trick in circumstances where order didn't change.
 
