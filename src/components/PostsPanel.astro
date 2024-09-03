@@ -141,6 +141,8 @@ function formatTag(tag: string[]) {
                 {group.posts.map((post, i) => (
                     <a href={post.data.customURL || getPostUrlBySlug(post.slug)}
                        aria-label={post.data.title}
+                       target={post.data.customURL ? "_blank" : ""}
+                       rel={post.data.customURL ? "noopener noreferrer" : ""}
                        class="group btn-plain block h-10 w-full rounded-lg hover:text-[initial]"
                     >
                         <div class="flex flex-row justify-start items-center h-full">
