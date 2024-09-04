@@ -143,11 +143,11 @@ function formatTag(tag: string[]) {
                        aria-label={post.data.title}
                        target={post.data.customURL ? "_blank" : ""}
                        rel={post.data.customURL ? "noopener noreferrer" : ""}
-                       class="group btn-plain block h-10 w-full rounded-lg hover:text-[initial]"
+                       class="group btn-plain block h-10 w-full rounded-lg hover:text-[initial] xxxs:mt-[6rem] xxs:mt-[4rem] xs:mt-[3rem] sm:mt-[2.5rem] md:mt-[1rem] lg:mt-[1rem] xl:mt-[0.5rem]"
                     >
                         <div class="flex flex-row justify-start items-center h-full">
                             <!-- date -->
-                            <div class="w-[15%] md:w-[10%] transition text-sm text-right text-50">
+                            <div class="w-[15%] md:w-[10%] transition text-sm text-right text-50 whitespace-nowrap overflow-hidden">
                                 {formatDate(post.data.published)}
                             </div>
                             <!-- dot and line -->
@@ -168,7 +168,7 @@ function formatTag(tag: string[]) {
                             <!-- post title -->
                             <div class="w-[70%] md:max-w-[65%] md:w-[65%] text-left font-bold
                                 group-hover:translate-x-1 transition-all group-hover:text-[var(--primary)]
-                                text-75 pr-8 whitespace-nowrap overflow-ellipsis overflow-hidden"
+                                text-75 pr-8"
                             >
                                     {post.data.title}
                             </div>

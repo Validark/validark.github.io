@@ -9,6 +9,9 @@ module.exports = {
         sans: ['Roboto', 'sans-serif', ...defaultTheme.fontFamily.sans],
       },
       screens: {
+        xxxs: '10px',
+        xxs: '300px',
+        xs: '345px',
         lg: '1360px',
         xl: '1760px',
       },
