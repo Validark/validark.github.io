@@ -19,17 +19,36 @@ export const siteConfig: SiteConfig = {
     src: 'assets/images/demo-banner.png',   // Relative to the /src directory. Relative to the /public directory if it starts with '/'
     position: 'center', // Equivalent to object-position, defaults center
     credit: {
-      enable: false,         // Display the credit text of the banner image
-      text: '',              // Credit text to be displayed
-      url: ''                // (Optional) URL link to the original artwork or artist's page
+      enable: true,         // Display the credit text of the banner image
+      text: 'asdf',              // Credit text to be displayed
+      url: 'asf'                // (Optional) URL link to the original artwork or artist's page
     }
   },
   favicon: [    // Leave this array empty to use the default favicon
-    // {
-    //   src: '',    // Path of the favicon, relative to the /public directory
-    //   // theme: 'light',              // (Optional) Either 'light' or 'dark', set only if you have different favicons for light and dark mode
-    //   sizes: '32x32',              // (Optional) Size of the favicon, set only if you have favicons of different sizes
-    // }
+    {
+      src: './favicon/favicon-16x16.png',
+      sizes: '16x16',
+    },
+    {
+      src: './favicon/favicon-32x32.png',
+      sizes: '32x32',
+    },
+    {
+      src: './favicon/favicon-128x128.png',
+      sizes: '128x128',
+    },
+    {
+      src: './favicon/favicon-180x180.png',
+      sizes: '180x180',
+    },
+    {
+      src: './favicon/android-chrome-192x192.png',
+      sizes: '192x192',
+    },
+    {
+      src: './favicon/android-chrome-512x512.png',
+      sizes: '512x512',
+    }
   ]
 }
 
