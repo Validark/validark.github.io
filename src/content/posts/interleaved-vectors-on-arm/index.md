@@ -3,7 +3,7 @@ title: Use interleaved vectors for parsing on ARM
 published: 2024-09-03T13:15:30
 description: 'Why using interleaved vectors via LD4 results in efficiency gains'
 image: './interleaved-vectors-on-arm-dark.svg'
-tags: ['simd']
+tags: ['simd', 'aarch64']
 category: ''
 draft: false
 language: 'en-us'
