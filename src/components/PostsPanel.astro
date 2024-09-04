@@ -143,7 +143,7 @@ function formatTag(tag: string[]) {
                        aria-label={post.data.title}
                        target={post.data.customURL ? "_blank" : ""}
                        rel={post.data.customURL ? "noopener noreferrer" : ""}
-                       class="group btn-plain block h-10 w-full rounded-lg hover:text-[initial] xxxs:mt-[6rem] xxs:mt-[4rem] xs:mt-[3rem] sm:mt-[2.5rem] md:mt-[1rem] lg:mt-[1rem] xl:mt-[0.5rem]"
+                       class="group btn-plain block h-10 w-full rounded-lg hover:text-[initial] xxxs:mt-[6rem] xxs:mt-[4rem] xs:mt-[3rem] sm:mt-[2.5rem] md:mt-[1rem] lg:mt-[1rem] xl:mt-[0.25rem]"
                     >
                         <div class="flex flex-row justify-start items-center h-full">
                             <!-- date -->
@@ -194,8 +194,26 @@ function formatTag(tag: string[]) {
         }
         .dash-line::before {
             content: "";
-            @apply w-[10%] h-3/4 absolute left-[calc(50%_-_1px)] -top-[37%] border-l-[2px]
-            border-dashed pointer-events-none border-[var(--line-color)] transition
+            @apply w-[10%]
+
+
+            xxxs:h-[307%]
+            xxs:h-[229%]
+            xs:h-[179%]
+            sm:h-[162%]
+            md:h-[110%]
+            lg:h-[105%]
+            xl:h-3/4
+
+            xxxs:-top-[272%]
+            xxs:-top-[194%]
+            xs:-top-[150%]
+            sm:-top-[132%]
+            md:-top-[79%]
+            lg:-top-[70%]
+            xl:-top-[37%]
+
+            absolute left-[calc(50%_-_1px)] border-l-[2px] border-dashed pointer-events-none border-[var(--line-color)] transition
         }
     }
 </style>
