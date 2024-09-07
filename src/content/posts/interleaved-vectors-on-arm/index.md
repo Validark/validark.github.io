@@ -135,7 +135,6 @@ checkWhitespace:
     fmov    w10, s0
     bfi     w10, w8, #16, #16
     orr     x0, x10, x9, lsl #32
-    ret
 ```
 
 Unfortunately, LLVM, has not yet seen the light-- of interleaved vectors. Here is the x86-64 emit for Zen 4, for reference:
@@ -148,7 +147,6 @@ checkWhitespace:
     vpcmpeqb        k0, zmm0, zmmword ptr [rip + .LCPI0_0]
     kmovq   rax, k0
     vzeroupper
-    ret
 ```
 
 This paints Arm/Aarch64 in an unnecessarily bad light. With interleaved vectors, and telling the compiler exactly what we want to do, we can do a lot better.
@@ -189,12 +187,197 @@ checkWhitespace:
     sri     v6.16b, v6.16b, #4
     shrn    v0.8b, v6.8h, #4
     fmov    x0, d0
-    ret
 ```
 
 This is a lot cleaner! I show and explain how this routine works [here](https://www.youtube.com/live/FDiUKafPs0U?t=2245).
 
 ###### Note: if you check LLVM-mca, you will find that this is expected to run slower than the previous version [if you only care to do a single movemask](https://zig.godbolt.org/z/K9nYn1e46). However, if you want to do several movemasks simultaneously, [this version will be faster](https://zig.godbolt.org/z/69qYnzjo9). LLVM's cost model is also conservative; the `shrn` instruction has 3 cycles of latency on Apple M3's performance core, but 4 cycles of latency on their efficiency core. LLVM treats it as a 4-cycle operation.
+
+
+## Mask-To-Vector
+
+Sometimes, we want to go the other way. This may be because we did a movemask, then did some bit manipulation on the mask, and now we want to turn our mask back into a vector. Here is the routine for normal vectors on ARM64:
+
+```zig
+export fn unmovemask64(x: u64) @Vector(64, u8) {
+    const bit_positions = @as(@Vector(64, u8), @splat(1)) << @truncate(std.simd.iota(u8, 64));
+    const v0 = std.simd.join(@as(@Vector(8, u8), @splat(0)), @as(@Vector(8, u8), @splat(1)));
+    const v1 = std.simd.join(@as(@Vector(8, u8), @splat(2)), @as(@Vector(8, u8), @splat(3)));
+    const v2 = std.simd.join(@as(@Vector(8, u8), @splat(4)), @as(@Vector(8, u8), @splat(5)));
+    const v3 = std.simd.join(@as(@Vector(8, u8), @splat(6)), @as(@Vector(8, u8), @splat(7)));
+
+    const v = std.simd.join(@as(@Vector(8, u8), @bitCast(x)), @as(@Vector(8, u8), @splat(undefined)));
+
+    const final: @Vector(64, u8) = @bitCast([4]@Vector(16, u8){ tbl(v, v0), tbl(v, v1), tbl(v, v2), tbl(v, v3) });
+
+    return @select(u8, (final & bit_positions) == bit_positions,
+        @as(@Vector(64, u8), @splat(0xFF)),
+        @as(@Vector(64, u8), @splat(0)),
+    );
+}
+
+fn tbl(table: @Vector(16, u8), indices: anytype) @TypeOf(indices) {
+    switch (@TypeOf(indices)) {
+        @Vector(8, u8), @Vector(16, u8) => {},
+        else => @compileError("[tbl] Invalid type for indices"),
+    }
+    return struct {
+        extern fn @"llvm.aarch64.neon.tbl1"(@TypeOf(table), @TypeOf(indices)) @TypeOf(indices);
+    }.@"llvm.aarch64.neon.tbl1"(table, indices);
+}
+```
+
+And the corresponding assembly: (I reordered the instructions and removed C ABI stuff)
+
+```asm
+.LCPI1_0:
+        .byte   0
+        .byte   0
+        .byte   0
+        .byte   0
+        .byte   0
+        .byte   0
+        .byte   0
+        .byte   0
+        .byte   1
+        .byte   1
+        .byte   1
+        .byte   1
+        .byte   1
+        .byte   1
+        .byte   1
+        .byte   1
+.LCPI1_1:
+        .byte   2
+        .byte   2
+        .byte   2
+        .byte   2
+        .byte   2
+        .byte   2
+        .byte   2
+        .byte   2
+        .byte   3
+        .byte   3
+        .byte   3
+        .byte   3
+        .byte   3
+        .byte   3
+        .byte   3
+        .byte   3
+.LCPI1_2:
+        .byte   4
+        .byte   4
+        .byte   4
+        .byte   4
+        .byte   4
+        .byte   4
+        .byte   4
+        .byte   4
+        .byte   5
+        .byte   5
+        .byte   5
+        .byte   5
+        .byte   5
+        .byte   5
+        .byte   5
+        .byte   5
+.LCPI1_3:
+        .byte   6
+        .byte   6
+        .byte   6
+        .byte   6
+        .byte   6
+        .byte   6
+        .byte   6
+        .byte   6
+        .byte   7
+        .byte   7
+        .byte   7
+        .byte   7
+        .byte   7
+        .byte   7
+        .byte   7
+        .byte   7
+.LCPI1_4:
+        .byte   1
+        .byte   2
+        .byte   4
+        .byte   8
+        .byte   16
+        .byte   32
+        .byte   64
+        .byte   128
+        .byte   1
+        .byte   2
+        .byte   4
+        .byte   8
+        .byte   16
+        .byte   32
+        .byte   64
+        .byte   128
+unmovemask64:
+        adrp    x9, .LCPI1_0; load the 5 vectors above into registers
+        ldr     q1, [x9, :lo12:.LCPI1_0]
+        adrp    x9, .LCPI1_1
+        ldr     q2, [x9, :lo12:.LCPI1_1]
+        adrp    x9, .LCPI1_2
+        ldr     q3, [x9, :lo12:.LCPI1_2]
+        adrp    x9, .LCPI1_3
+        ldr     q4, [x9, :lo12:.LCPI1_3]
+        adrp    x9, .LCPI1_4
+        ldr     q5, [x9, :lo12:.LCPI1_4]
+        fmov    d0, x0; move data from a scalar register to a vector register
+        tbl     v1.16b, { v0.16b }, v1.16b; broadcast byte 0 to bytes 0-7, byte 1 to bytes 8-15
+        tbl     v2.16b, { v0.16b }, v2.16b; broadcast byte 2 to bytes 0-7, byte 3 to bytes 8-15
+        tbl     v3.16b, { v0.16b }, v3.16b; broadcast byte 4 to bytes 0-7, byte 5 to bytes 8-15
+        tbl     v4.16b, { v0.16b }, v4.16b; broadcast byte 6 to bytes 0-7, byte 7 to bytes 8-15
+        cmtst   v1.16b, v1.16b, v5.16b; turn each unique bit position into a byte of all 0xFF or 0
+        cmtst   v2.16b, v2.16b, v5.16b; turn each unique bit position into a byte of all 0xFF or 0
+        cmtst   v3.16b, v3.16b, v5.16b; turn each unique bit position into a byte of all 0xFF or 0
+        cmtst   v4.16b, v4.16b, v5.16b; turn each unique bit position into a byte of all 0xFF or 0
+```
+
+In interleaved space, we can do better:
+
+```zig
+export fn unmovemask(x: u64) @Vector(64, u8) {
+    const vec = @as(@Vector(8, u8), @bitCast(x));
+    const interlaced_vec = std.simd.interlace(.{ vec, vec });
+
+    return std.simd.join(
+        std.simd.join(cmtst(interlaced_vec, @bitCast(@as(@Vector(8, u16), @splat(@as(u16, @bitCast([2]u8{ 1 << 0, 1 << 4 })))))),
+                      cmtst(interlaced_vec, @bitCast(@as(@Vector(8, u16), @splat(@as(u16, @bitCast([2]u8{ 1 << 1, 1 << 5 }))))))),
+        std.simd.join(cmtst(interlaced_vec, @bitCast(@as(@Vector(8, u16), @splat(@as(u16, @bitCast([2]u8{ 1 << 2, 1 << 6 })))))),
+                      cmtst(interlaced_vec, @bitCast(@as(@Vector(8, u16), @splat(@as(u16, @bitCast([2]u8{ 1 << 3, 1 << 7 })))))))
+    );
+}
+
+fn cmtst(a: anytype, comptime b: @TypeOf(a)) @TypeOf(a) {
+    return @select(u8, (a & b) != @as(@TypeOf(a), @splat(0)), @as(@TypeOf(a), @splat(0xff)), @as(@TypeOf(a), @splat(0)));
+}
+```
+
+In assembly: (after [llvm/llvm-project#107243](https://github.com/llvm/llvm-project/issues/107243), reordering, and removing C ABI ceremony)
+
+```asm
+unmovemask_interleaved:
+        mov     w9, #0x400; load 4 constants into vectors
+        dup     v0.8h, w9
+        mov     w9, #0x501
+        dup     v1.8h, w9
+        mov     w9, #0x602
+        dup     v2.8h, w9
+        mov     w9, #0x703
+        dup     v3.8h, w9
+        fmov    d4, x0; move data from a scalar register to a vector register
+        zip1    v4.16b, v4.16b, v4.16b; interleave input with itself -> 0 0 1 1 2 2 3 3 4 4 5 5 6 6 7 7 8 8
+        cmtst   v0.16b, v0.16b, v4.16b; match bits positions: 0,4,0,4,0,4,0,4,0,4,0,4,0,4,0,4
+        cmtst   v1.16b, v1.16b, v4.16b; match bits positions: 1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5
+        cmtst   v2.16b, v2.16b, v4.16b; match bits positions: 2,6,2,6,2,6,2,6,2,6,2,6,2,6,2,6
+        cmtst   v3.16b, v3.16b, v4.16b; match bits positions: 3,7,3,7,3,7,3,7,3,7,3,7,3,7,3,7
+```
+
+In this case, using interleaved vectors eliminated the memory accesses and reduced 4 `tbl` instructions to a single `zip1` instruction!
 
 ## Elementwise Shifts
 
@@ -305,4 +488,4 @@ However, using interleaved vectors has instruction-level-parallelism advantages 
 
 ## Conclusion
 
-So next time you want to parse [utf8](https://github.com/simdutf/simdutf/issues/428), or [JSON](https://github.com/simdjson/simdjson), or [Zig](https://github.com/Validark/Accelerated-Zig-Parser), be sure to use interleaved vectors!
+So next time you want to parse [utf8](https://github.com/simdutf/simdutf/issues/428), [JSON](https://github.com/simdjson/simdjson), or [Zig](https://github.com/Validark/Accelerated-Zig-Parser), be sure to use interleaved vectors!
