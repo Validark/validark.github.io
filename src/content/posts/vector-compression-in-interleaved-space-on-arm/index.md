@@ -53,8 +53,7 @@ It looks the same!
 
 Since we abstracted away the interleaved shift, we can think of it as though it's just a normal-ordered vector. So here is what a prefix sum looks like for a normally-ordered vector:
 
-
-![](./prefix_sum.svg)
+![](https://raw.githubusercontent.com/Validark/validark.github.io/main/src/content/posts/vector-compression-in-interleaved-space-on-arm/prefix_sum.svg)
 
 As depicted above, we first shift the vector right by one, then add that to itself. Then we shift the result of that addition to the right by two, then add that to our previous result. If we continue with this pattern, every column ends up becoming the sum of all bytes that came before it.
 
