@@ -194,7 +194,7 @@ This is a lot cleaner! I show and explain how this routine works [here](https://
 ###### Note: if you check LLVM-mca, you will find that this is expected to run slower than the previous version [if you only care to do a single movemask](https://zig.godbolt.org/z/K9nYn1e46). However, if you want to do several movemasks simultaneously, [this version will be faster](https://zig.godbolt.org/z/69qYnzjo9). LLVM's cost model is also conservative; the `shrn` instruction has 3 cycles of latency on Apple M3's performance core, but 4 cycles of latency on their efficiency core. LLVM treats it as a 4-cycle operation.
 
 
-## Mask-To-Vector
+## Unmovemask
 
 Sometimes, we want to go the other way. This may be because we did a movemask, then did some bit manipulation on the mask, and now we want to turn our mask back into a vector. Here is the routine for normal vectors on ARM64:
 
@@ -421,7 +421,7 @@ In the above diagram, each of the bottom 4 vectors are a `prev0` vector. The `pr
 
 With only 3 vector shifts, and a total of 7 vectors in play, we can operate on all the shifted vectors we need for a 64-byte chunk. Compare this to needing to produce a separate `prev1`, `prev2`, and `prev3` for each 16-byte vector, which takes a total of 12 vector shifts for 64 bytes.
 
-Using this intuition, we can write a function which emulates the semantics of a vector shift by any compile-time known amount on normally-ordered vectors, but for interleaved vectors! This removes the restriction of only using this vector interleaving trick in circumstances where order didn't change.
+Using this intuition, we can write a function which emulates the semantics of a vector shift by any compile-time known amount on normally-ordered vectors, but for interleaved vectors! This removes the restriction of only using this vector interleaving trick in circumstances where order didn't change<span id="shiftInterleavedElementsRight">.</span>
 
 ```zig
 fn shiftInterleavedElementsRight(

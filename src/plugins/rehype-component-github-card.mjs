@@ -71,7 +71,7 @@ export function GithubCardComponent(properties, children) {
         avatarEl.style.backgroundImage = 'url(' + data.owner.avatar_url + ')';
         avatarEl.style.backgroundColor = 'transparent';
         if (data.license?.spdx_id) {
-          document.getElementById('${cardUuid}-license').innerText = data.license?.spdx_id
+          document.getElementById('${cardUuid}-license').innerText = ${repo === 'llvm/llvm-project'} ? "Apache License v2.0 with LLVM Exceptions" : data.license?.spdx_id
         } else {
           document.getElementById('${cardUuid}-license').classList.add = "no-license"
         };
