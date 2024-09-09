@@ -1,5 +1,5 @@
 {
-  const THEME_COLOR = 'white'
+  const THEME_COLOR = 'black'
   const Y_OFFSET = 600
   const boxes = [
     ...new Array(64)
@@ -57,6 +57,43 @@
 
 		  <g id="deer70" stroke-linecap="round" stroke-width="10">
 			  <rect class="btn-regular" width="85" height="85" x="8" y="8" stroke="none" fill="${THEME_COLOR}" /> <!-- stroke="url(#rainbow-gradient2)" -->
+
+        <linearGradient id="gradient4" x1="0%" y1="0%" x2="100%" y2="100%">
+				${(() => {
+          const colors = [
+            '#ff3030',
+            // '#d87a00',
+            // '#e4c900',
+            // '#37bc37',
+            // '#ff30ff',
+            // '#c377f9', // '#9b1cf5',
+            // '#c377f9', // '#9b1cf5',
+            // '#8e8edd', // '#4343c6',
+            // '#fd3ffd', // '#b902b9',
+            '#ff30ff',
+          ]
+
+          return colors
+            .map(
+              (
+                c,
+                i,
+              ) => `${' '.repeat(20)}<stop offset="${(i / (colors.length - 1)) * 100}%" stop-color="${c}">
+						${
+              '' &&
+              `<animate attributeName="stop-color"
+							values="${(() => {
+                const s = colors.slice(i).concat(colors.slice(0, i))
+                return [...s, ...s.slice(0, 1)]
+              })().join(';')}" dur="4s"
+							repeatCount="indefinite" />`
+            }
+					</stop>`,
+            )
+            .join('\n')
+        })()}
+			  </linearGradient>
+
 			  <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
 				${(() => {
           const colors = [
@@ -226,7 +263,7 @@
 
 	  <rect width="100%" height="100%" fill="none"/>
 	  <rect x="0" y="0" width="1610" height="410" fill="url(#rainbow-gradient)"  />
-	<rect x="0" y="${Y_OFFSET}" width="1610" height="410" fill="url(#rainbow-gradient2)"  />
+	<rect x="0" y="${Y_OFFSET}" width="1610" height="410" fill="url(#gradient4)"  />
 	<text class="neon-text" x="690" y="580" fill="url(#rainbow-gradient3)" style="font-size: 150px">↓</text>
 
 	  `.concat(

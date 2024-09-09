@@ -277,6 +277,7 @@ Subject to the following issues:
     margin-top: 0;
     margin-bottom: 0;
     line-height: 1.5;
+    white-space: nowrap;
 }
 
 p + div#issue-dump {
