@@ -26,27 +26,27 @@ export const siteConfig: SiteConfig = {
   },
   favicon: [    // Leave this array empty to use the default favicon
     {
-      src: './favicon/favicon-16x16.png',
+      src: '../public/favicon/favicon-16x16.png',
       sizes: '16x16',
     },
     {
-      src: './favicon/favicon-32x32.png',
+      src: '../public/favicon/favicon-32x32.png',
       sizes: '32x32',
     },
     {
-      src: './favicon/favicon-128x128.png',
+      src: '../public/favicon/favicon-128x128.png',
       sizes: '128x128',
     },
     {
-      src: './favicon/favicon-180x180.png',
+      src: '../public/favicon/favicon-180x180.png',
       sizes: '180x180',
     },
     {
-      src: './favicon/android-chrome-192x192.png',
+      src: '../public/favicon/android-chrome-192x192.png',
       sizes: '192x192',
     },
     {
-      src: './favicon/android-chrome-512x512.png',
+      src: '../public/favicon/android-chrome-512x512.png',
       sizes: '512x512',
     }
   ]

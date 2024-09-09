@@ -247,7 +247,6 @@ Subject to the following issues:
 
                 for (const e of document.getElementsByClassName("issue-indicator")) {
                     if (e.id === `issue-indicator-${issue_id}`) {
-                        console.log(e, e.id === `issue-indicator-${issue_id}`);
                         e.classList.remove("issue-indicator-unknown");
                         e.innerHTML = svg;
                     }
