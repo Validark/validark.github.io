@@ -85,6 +85,10 @@
 			</linearGradient>
 		</g>
 
+
+		<text class="neon-text" x="720" y="200" fill="url(#rainbow-gradient3)"
+			style="font-size: 75px">↓</text>
+
 		<mask id="mask-0">
 			<rect width="100%" height="100%" fill="white" />
 			<text class="neon-text" stroke-width="3" x="36" y="69" fill="black">0</text>
