@@ -1,6 +1,6 @@
 ---
 title: Vector Compression in Interleaved Space on ARM
-published: 2024-09-04T13:43:30
+published: 2024-09-09T12:56:30
 description: 'How to emulate a VPCOMPRESSB on interleaved vectors'
 image: './vector-compress.svg'
 tags: ['simd', 'aarch64']
