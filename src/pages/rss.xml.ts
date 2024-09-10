@@ -14,8 +14,10 @@ export async function GET(context: APIContext) {
     title: siteConfig.title,
     description: siteConfig.subtitle || 'No description',
     site: context.site ?? 'https://fuwari.vercel.app',
+    xmlns: { content: "http://purl.org/rss/1.0/modules/content/" },
     items: blog.map(post => {
       const body = typeof post.data.body === 'string' ? post.data.body : ''
+
       return {
         title: post.data.title,
         pubDate: post.data.published,
