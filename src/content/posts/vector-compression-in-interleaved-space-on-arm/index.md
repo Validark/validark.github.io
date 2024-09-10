@@ -287,20 +287,18 @@ p + div#issue-dump {
 
 ## Technique II: Lookup table
 
-Unfortunately, it seems that even with those issues fixed, it's still going to be more efficient to use a lookup table, if you can afford to consume 2KiB of your precious cache. ([Godbolt link](https://zig.godbolt.org/z/66ch5rYM1))
+Unfortunately, it seems that even with those issues fixed, it's still going to be more efficient to use a lookup table, if you can afford to consume 2KiB of your precious cache. ([Godbolt link](https://zig.godbolt.org/z/rKhEzdnPf))
 
 ```zig
 export fn compress(interleaved_data: @Vector(64, u8), bitstring: u64, dest: [*]u8) void {
     comptime var lookups: [256]@Vector(8, u8) = undefined;
-    @setEvalBranchQuota(100000);
     comptime {
+        @setEvalBranchQuota(100000);
         for (&lookups, 0..) |*slot, i| {
             var pos: u8 = 0;
-            for (0..8) |bit_i| {
-                const bit: u1 = @truncate(i >> bit_i);
-                if (bit == 1) {
-                    slot[pos] = bit_i / 4 + (bit_i & 3) * 16;
-                }
+            for (0..8) |j| {
+                const bit: u1 = @truncate(i >> j);
+                slot[pos] = j / 4 + (j & 3) * 16;
                 pos += bit;
             }
 
