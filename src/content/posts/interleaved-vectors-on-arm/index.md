@@ -77,8 +77,8 @@ If you want to produce a 64-bit bitstring that tells you where the space charact
 ```zig
 export fn checkWhitespace(ptr: [*]u8) u64 {
     return @bitCast(
-		@as(@Vector(64, u8), ptr[0..64].*) == @as(@Vector(64, u8), @splat(' '))
-	);
+        @as(@Vector(64, u8), ptr[0..64].*) == @as(@Vector(64, u8), @splat(' '))
+    );
 }
 ```
 
@@ -491,3 +491,5 @@ However, using interleaved vectors has instruction-level-parallelism advantages 
 As shown above, the [movemask](../interleaved-vectors-on-arm/#movemask) and [unmovemask](../interleaved-vectors-on-arm/#unmovemask) routines can not only be emulated in interleaved space, but are more efficicent than the routines for vectors in normal space. [Elementwise-shifts](../interleaved-vectors-on-arm/#elementwise-shifts) are also more efficient when shifting only 1-3 slots left or right, but are less efficient when shifting by a multiple of 16.
 
 So next time you want to parse [utf8](https://github.com/simdutf/simdutf/issues/428), [JSON](https://github.com/simdjson/simdjson), or [Zig](https://github.com/Validark/Accelerated-Zig-Parser), be sure to use interleaved vectors!
+
+‒ Validark

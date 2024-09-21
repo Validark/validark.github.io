@@ -342,3 +342,5 @@ fn tbl4(
 This technique also has to use `tbl4` because it is deinterleaving the data at the same time as compressing. In normal space, you would just use `tbl1`. But hey, as long as there is no serial dependency, you only eat the latency once.
 
 Now go compress your interleaved vectors, you glorious vectorizers!
+
+‒ Validark
