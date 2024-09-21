@@ -190,7 +190,7 @@ $$
 
 As hinted to earlier, we can find $\footnotesize \lceil\log_2{(x + 16)}\rceil - \lceil\log_2{(c + 16)}\rceil$ by doing `@clz(c + 15) - @clz(x + 15)`. Note that the terms are now in reverse order because the answer returned by `@clz(b)` is actually <span style="white-space: nowrap">$\footnotesize 63 - \lfloor\log_2{b}\rfloor$.</span> We also subtracted $\footnotesize 1$ from $\footnotesize 16$ because we probably want the ceil base $\footnotesize 2$ logarithm instead, and the algorithm for that is `64 - @clz(x - 1)`. `(64 - @clz((x + 16) - 1)) - (64 - @clz((c + 16) - 1))` reduces to `@clz(c + 15) - @clz(x + 15)`. That's slightly different than what we want, which is to ceil only after multiplying by <span style="white-space: nowrap">$\footnotesize 1.7095112913514547$,</span> but if we're careful about which way the rounding works, we should be fine.
 
-------------------------------------------------------------------
+:::tip[Aside]
 
 The other thing I notice is that $\footnotesize 1.5^{n}$ is equivalent to <span style="white-space: nowrap">$\footnotesize \frac{3^{n}}{2^{n}}$.</span> Of course, dividing by $\footnotesize 2^{n}$ is just a right shift, which means we could do the following once we determine the value of <span style="white-space: nowrap">$\footnotesize n$.</span>
 
@@ -200,7 +200,7 @@ $$
 
 Of course, this will have additional overflow potential even when the right shift would have taken us back into the range of `usize`. Maybe we could expand to 128 bits for the multiply. Alternatively, for powers of 1.5 where the decimal point is less relevant, we'd probably be fine with a lookup table or something so our code could be `(c + 16) * powers[...]) - 16`
 
-----------------------------------------------------------------------
+:::
 One thing we could do is work backwards, changing $\footnotesize 1.7095112913514547$ to a nicer number like $\footnotesize 1.5$ or <span style="white-space: nowrap">$\footnotesize 2$.</span> Let's pick <span style="white-space: nowrap">$\footnotesize 2$.</span> To make it so we would multiply by $\footnotesize 2$ instead, we would change our recursive sequence to:
 
 $$
