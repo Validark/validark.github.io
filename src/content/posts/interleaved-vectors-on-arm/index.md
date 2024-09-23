@@ -67,7 +67,7 @@ const rgba = struct { r: u8, g: u8, b: u8, a: u8 };
 
 E.g. if you have an array of `rgba`s, `ld4` will return your `r`, `g`, `b`, and `a` values in separate vectors.
 
-However, even when reordering is not what we're going for, we can still see efficiency gains by using this facility when [movemasking](#movemask) or when doing [vector element shifts](#elementwise-shifts).
+However, even when reordering is not what we're going for, we can still see efficiency gains by using this facility when [movemasking](#movemask), when [unmovemasking](#unmovemask), or when doing [vector element shifts](#elementwise-shifts).
 
 
 ## Movemask
