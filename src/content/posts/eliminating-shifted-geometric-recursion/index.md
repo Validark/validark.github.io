@@ -41,6 +41,10 @@ Just for fun, in this article I will investigate replacing this with a branchles
 First, I will temporarily disregard the fact that we are dealing with 64 bit integers, disregard the fact that doing an integer division by 2 can floor the true quotient by 0.5 when the dividend is odd, and disregard the saturating arithmetic and just write this in terms of a recursive sequence.
 
 
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 100">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+
 $$
 \LARGE
 \begin{equation}
@@ -50,9 +54,16 @@ $$
 \end{split}
 \end{equation}
 $$
-
+</div>
+</foreignObject>
+</svg>
 
 If you remember your pre-calculus class, this recursive sequence is called "shifted geometric", because it has a multiply that is being shifted by an addition. For <span style="white-space: nowrap">$\footnotesize U_0 = c$,</span> the expansion of this recursive sequence looks like:
+
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 250">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE
@@ -66,8 +77,18 @@ $$
 \end{split}
 \end{equation}
 $$
+</div>
+</foreignObject>
+</svg>
+
+
 
 To get the general equation, let's replace $\footnotesize 1.5$ with $\footnotesize r$ and $\footnotesize 8$ with <span style="white-space: nowrap">$\footnotesize d$:</span>
+
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 310">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE
@@ -82,9 +103,15 @@ $$
 \end{split}
 \end{equation}
 $$
-
+</div>
+</foreignObject>
+</svg>
 
 Let's apply the distributive property of multiplication:
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 260">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE \begin{equation}
@@ -97,44 +124,100 @@ $$
 \end{split}
 \end{equation}
 $$
+</div>
+</foreignObject>
+</svg>
+
+
 
 The pattern here is pretty obvious. We can express it using $\footnotesize \Sigma$ notation:
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 115">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE U_n = cr^n + \sum_{i=1}^{n} dr^{i-1}
 $$
+</div>
+</foreignObject>
+</svg>
+
 
 You may notice that the $\footnotesize \Sigma$ term is the "sum of a finite geometric sequence". Replacing that term with the well-known formula for that allows us to write an explicit function:
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 5 940 100">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE f(n) = cr^n + d \left(\frac{1 - r^n}{1 - r}\right)
 $$
+</div>
+</foreignObject>
+</svg>
+
 
 Let's put $\footnotesize 1.5$ back in for $\footnotesize r$ and $\footnotesize 8$ back in for $\footnotesize d$ and assess the damage:
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 5 940 100">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE f(n) = c \times 1.5^n + 8 \left(\frac{1 - 1.5^n}{1 - 1.5}\right)
 $$
+</div>
+</foreignObject>
+</svg>
+
 
 Luckily, we can simplify $\footnotesize (1 - 1.5)$ to <span style="white-space: nowrap">$\footnotesize -0.5$.</span> Dividing by $\footnotesize -0.5$ is equivalent to multiplying by <span style="white-space: nowrap">$\footnotesize -2$,</span> which we can combine with the $\footnotesize 8$ term to get <span style="white-space: nowrap">$\footnotesize -16$:</span>
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 55">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE f(n) = c \times 1.5^n + -16 (1 - 1.5^n)
 $$
+</div>
+</foreignObject>
+</svg>
+
 
 We could stop here, but let's distribute the <span style="white-space: nowrap">$\footnotesize -16$:</span>
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 55">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE f(n) = c \times 1.5^n  - 16 + 16 \times 1.5^n
 $$
+</div>
+</foreignObject>
+</svg>
+
 
 Since we have two terms being added which each are multiplied by <span style="white-space: nowrap">$\footnotesize 1.5^n$,</span> we can factor it out like so:
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 55">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE f(n) = (c+16) \times 1.5^n - 16
 $$
+</div>
+</foreignObject>
+</svg>
 
 This looks how we probably expected it would, and it is relatively easy to deal with. Now let's try to apply this to our original problem. The first thing we want to do, is find an $\footnotesize n$ for which <span style="white-space: nowrap">$\footnotesize x \ge f(n)$,</span> where $\footnotesize x$ is the requested `new_capacity`. To find <span style="white-space: nowrap">$\footnotesize n$,</span> we have to isolate it on the right-hand side:
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 830">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE \begin{equation}
@@ -157,12 +240,23 @@ $$
 \end{split}
 \end{equation}
 $$
+</div>
+</foreignObject>
+</svg>
 
 Now this is usable for our problem. We can compute $\footnotesize n$ by doing <span style="white-space: nowrap">$\footnotesize \lceil\log_{1.5}{(x + 16)} - \log_{1.5}{(c + 16)}\rceil$,</span> then plug that in to $\footnotesize n$ in <span style="white-space: nowrap">$\footnotesize f(n) = (c+16) \times 1.5^n - 16$.</span> Together, that's:
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 60">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE (c+16) \times 1.5^{\lceil(\log_{1.5}{(x + 16)} - \log_{1.5}{(c + 16)})\rceil} - 16
 $$
+</div>
+</foreignObject>
+</svg>
+
 
 For those of you who skipped ahead, $\footnotesize c$ is `self.capacity` and $\footnotesize x$ is `new_capacity`, and this formula gives you the `better_capacity`. Note that this formula will give numbers a bit higher than the original while loop, because the original while loop loses some 0.5's when dividing an odd number by 2.
 
@@ -172,21 +266,42 @@ Now, the remaining question is how to compute the previous expression, or rather
 
 Sadly, efficiently computing the base $\footnotesize 1.5$ logarithm of an integer is not ideal. If we were allowed to change the original problem such that we could use the base $\footnotesize 2$ logarithm, that would be much easier to compute, that's just `@typeInfo(@TypeOf(c)).int.bits - 1 - @clz(c)` (obviously, this would be an integer, so we should be careful on how the flooring of the true answer affects rounding error). Let's use this information to make an approximation. Using the change of base property of logarithms, we can rewrite the equation like so:
 
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 95">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+
 $$
 \LARGE \frac{\log_2{(x + 16)}}{\log_2{1.5}} - \frac{\log_2{(c + 16)}}{\log_2{1.5}}
 $$
+</div>
+</foreignObject>
+</svg>
 
 Equivalently:
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 95">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE (\log_2{(x + 16)} - \log_2{(c + 16)}) \times \frac{1}{\log_2{1.5}}
 $$
+</div>
+</foreignObject>
+</svg>
 
 <span style="white-space: nowrap">$\footnotesize \frac{1}{\log_2{1.5}} \approx 1.7095112913514547$,</span> so we can approximate the above expression like so:
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 55">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE (\log_2{(x + 16)} - \log_2{(c + 16)}) \times 1.7095112913514547
 $$
+</div>
+</foreignObject>
+</svg>
 
 As hinted to earlier, we can find $\footnotesize \lceil\log_2{(x + 16)}\rceil - \lceil\log_2{(c + 16)}\rceil$ by doing `@clz(c + 15) - @clz(x + 15)`. Note that the terms are now in reverse order because the answer returned by `@clz(b)` is actually <span style="white-space: nowrap">$\footnotesize 63 - \lfloor\log_2{b}\rfloor$.</span> We also subtracted $\footnotesize 1$ from $\footnotesize 16$ because we probably want the ceil base $\footnotesize 2$ logarithm instead, and the algorithm for that is `64 - @clz(x - 1)`. `(64 - @clz((x + 16) - 1)) - (64 - @clz((c + 16) - 1))` reduces to `@clz(c + 15) - @clz(x + 15)`. That's slightly different than what we want, which is to ceil only after multiplying by <span style="white-space: nowrap">$\footnotesize 1.7095112913514547$,</span> but if we're careful about which way the rounding works, we should be fine.
 
@@ -194,14 +309,25 @@ As hinted to earlier, we can find $\footnotesize \lceil\log_2{(x + 16)}\rceil - 
 
 The other thing I notice is that $\footnotesize 1.5^{n}$ is equivalent to <span style="white-space: nowrap">$\footnotesize \frac{3^{n}}{2^{n}}$.</span> Of course, dividing by $\footnotesize 2^{n}$ is just a right shift, which means we could do the following once we determine the value of <span style="white-space: nowrap">$\footnotesize n$.</span>
 
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 55">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+
 $$
 \LARGE (((c+16) \times 3^{n}) \gg n) - 16
 $$
+</div>
+</foreignObject>
+</svg>
 
 Of course, this will have additional overflow potential even when the right shift would have taken us back into the range of `usize`. Maybe we could expand to 128 bits for the multiply. Alternatively, for powers of 1.5 where the decimal point is less relevant, we'd probably be fine with a lookup table or something so our code could be `(c + 16) * powers[...]) - 16`
 
 :::
 One thing we could do is work backwards, changing $\footnotesize 1.7095112913514547$ to a nicer number like $\footnotesize 1.5$ or <span style="white-space: nowrap">$\footnotesize 2$.</span> Let's pick <span style="white-space: nowrap">$\footnotesize 2$.</span> To make it so we would multiply by $\footnotesize 2$ instead, we would change our recursive sequence to:
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 110">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE \begin{equation}
@@ -211,8 +337,15 @@ $$
 \end{split}
 \end{equation}
 $$
+</div>
+</foreignObject>
+</svg>
 
 This works because $\footnotesize \frac{1}{\log_2{\sqrt 2}}$ is <span style="white-space: nowrap">$\footnotesize 2$.</span> This is still pretty close to our original formula, as $\footnotesize \sqrt 2 \approx 1.41421$ and <span style="white-space: nowrap">$\footnotesize 1.41421 \approx 1.5$.</span> If we did the same steps as before, $\footnotesize \frac{8}{1 - \sqrt 2} \approx 19.313708498984756$ would be in all the places where we had $\footnotesize 16$ in our original equations. Let's round that up to $\footnotesize 20$ this time, since we rounded $\footnotesize 1.5$ down to <span style="white-space: nowrap">$\footnotesize \sqrt 2$.</span> To do that, we change the common difference of $\footnotesize 8$ to <span style="white-space: nowrap">$\footnotesize -20 (1 - \sqrt 2)$,</span> which is about <span style="white-space: nowrap">$\footnotesize 8.2842712474619$.</span> Reminder: the point here is that when we divide this value by <span style="white-space: nowrap">$\footnotesize (1 - \sqrt 2)$,</span> we get $\footnotesize -20$ rather than the $\footnotesize -16$ we had earlier.
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 160">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE \begin{equation}
@@ -223,18 +356,35 @@ $$
 \end{split}
 \end{equation}
 $$
+</div>
+</foreignObject>
+</svg>
 
 By the same steps shown above, this gives us the coveted:
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 65">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE (c+20) \times \sqrt 2^{\lceil 2(\log_2{(x + 20)} - \log_2{(c + 20)})\rceil} - 20
 $$
+</div>
+</foreignObject>
+</svg>
 
 I.e.:
+
+<svg version="1.1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 10 940 65">
+<foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
 
 $$
 \LARGE (c+20) \times \sqrt 2^{\lceil \log_{\sqrt 2}{(x + 20)} - \log_{\sqrt 2}{(c + 20)}\rceil} - 20
 $$
+</div>
+</foreignObject>
+</svg>
 
 As mentioned before, we can find $\footnotesize \lceil\log_2{(x + 20)}\rceil - \lceil\log_2{(c + 20)}\rceil$ by doing `@clz(c + 19) - @clz(x + 19)`. However, this is not close enough to $\footnotesize \lceil \log_{\sqrt 2}{(x + 20)} - \log_{\sqrt 2}{(c + 20)}\rceil$ for our use-case because we need at least the granularity of a $\footnotesize \log_{\sqrt 2}{}$ either way (ideally, we could use even more precision in some cases). This could be accomplished via a lookup table, or via another approximation. As an approximation, we could pretend that each odd power of $\footnotesize \sqrt 2$ is half-way between powers of $\footnotesize 2$ that fall on even powers of <span style="white-space: nowrap">$\footnotesize \sqrt 2$.</span> If you think about it, this is kind of semantically in line with what we are doing when we subtract the `@clz` of two numbers, now with slightly more granularity. Here is how we could accomplish that:
 
