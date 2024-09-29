@@ -143,11 +143,11 @@ function formatTag(tag: string[]) {
                        aria-label={post.data.title}
                        target={post.data.customURL ? "_blank" : ""}
                        rel={post.data.customURL ? "noopener noreferrer" : ""}
-                       class="group btn-plain block h-10 w-full rounded-lg hover:text-[initial] xxxs:mt-[6rem] xxs:mt-[4rem] xs:mt-[3rem] sm:mt-[2.5rem] md:mt-[1rem] lg:mt-[1rem] xl:mt-[0.25rem]"
+                       class="group btn-plain block h-10 w-full rounded-lg hover:text-[initial] xxxs:mt-[9rem] xxs:mt-[6rem] xs:mt-[3rem] sm:mt-[2.5rem] md:mt-[1rem] lg:mt-[1rem] xl:mt-[0.25rem]"
                     >
                         <div class="flex flex-row justify-start items-center h-full">
                             <!-- date -->
-                            <div class="w-[15%] md:w-[10%] transition text-sm text-right text-50 whitespace-nowrap overflow-hidden">
+                            <div class="w-[15%] xxxs:w-[40%] xxs:w-[40%] md:w-[10%] sm:w-[95%] xs:w-[20%] transition text-sm text-right text-50 whitespace-nowrap">
                                 {formatDate(post.data.published)}
                             </div>
                             <!-- dot and line -->
@@ -162,7 +162,7 @@ function formatTag(tag: string[]) {
                                 group-active:outline-[var(--btn-plain-bg-active)]
                                 "
                                 ></div> -->
-                                <div class="transition-all h-3 w-3 bg-none rounded-full outline outline-[var(--primary)] mx-auto -outline-offset-[2px] z-50 outline-3
+                                <div class="transition-all h-3 w-3 bg-none outline outline-[var(--primary)] mx-auto -outline-offset-[2px] z-50 outline-3
                                 group-hover:bg-[var(--primary)]"></div>
                             </div>
                             <!-- post title -->
@@ -174,7 +174,7 @@ function formatTag(tag: string[]) {
                             </div>
                             <!-- tag list -->
                             <div class="hidden md:block md:w-[15%] text-left text-sm transition
-                            whitespace-nowrap overflow-ellipsis overflow-hidden
+                            whitespace-nowrap overflow-ellipsis
                             text-30"
                             >{formatTag(post.data.tags)}</div>
                         </div>
@@ -196,17 +196,16 @@ function formatTag(tag: string[]) {
             content: "";
             @apply w-[10%]
 
-
-            xxxs:h-[307%]
-            xxs:h-[229%]
+            xxxs:h-[425%]
+            xxs:h-[298%]
             xs:h-[179%]
             sm:h-[162%]
             md:h-[110%]
             lg:h-[105%]
             xl:h-3/4
 
-            xxxs:-top-[272%]
-            xxs:-top-[194%]
+            xxxs:-top-[393%]
+            xxs:-top-[266%]
             xs:-top-[150%]
             sm:-top-[132%]
             md:-top-[79%]
