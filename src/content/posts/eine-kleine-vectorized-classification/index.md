@@ -1,6 +1,6 @@
 ---
 title: Eine Kleine Vectorized Classification
-published: 2024-09-21T09:00:00
+published: 2024-09-29T09:35:00
 description: 'A simple technique for vectorized classification'
 image: ''
 tags: ['simd', 'branch-elimination']
