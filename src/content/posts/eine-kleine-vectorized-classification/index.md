@@ -17,10 +17,9 @@ For the new version of my SIMD Zig parser being released on October 10, I came u
 const single_char_ops = [_]u8{ '~', ':', ';', '[', ']', '?', '(', ')', '{', '}', ',' };
 ```
 
-To do this, I create a shuffle vector that we will pass into the `table` parameter of `vpshufb`. `vpshufb` is an x86-64 instruction that takes a `table` vector and an `indices` vector, and returns a vector where the value at position `i` becomes `table[indices[i]]`. Depending on how new a machine is, this allows us to lookup 32 or 64 bytes simultaneously into a 16-byte lookup table (one could also use a different 16-byte table for each 16-byte chunk). Here is how it is depicted on [officedaytime.com](https://www.officedaytime.com/simd512e/simdimg/si.php?f=pshufb):
+To do this, I create a shuffle vector that we will pass into the `table` parameter of `vpshufb`. `vpshufb` is an x86-64 instruction that takes a `table` vector and an `indices` vector, and returns a vector where the value at position `i` becomes `table[indices[i]]` for each 16-byte section of the `table` and `indices`. Depending on how new a machine is, this allows us to lookup 32 or 64 bytes simultaneously into a 16-byte lookup table (one could also use a different 16-byte table for each 16-byte chunk, but typically we duplicate the same 16-byte table for each chunk). Here is how it is depicted on [officedaytime.com](https://www.officedaytime.com/simd512e/simdimg/si.php?f=pshufb):
 
 ![An image depicting a vpshufb instruction. It is shown looking up 32 indices into a 32 byte vector. Each half of these vectors are operated on separately. That means the first 16 byte indices only look at the first 16 bytes in the table vector, and the second 16 byte indices only look at the second 16 bytes in the table vector.](./pshufb_3.png)
-
 
 Here is the `table` generator:
 
