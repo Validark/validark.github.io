@@ -336,3 +336,7 @@ Dare I say this is...
 </div>
 
 ‒ Validark
+
+:::note[Note from [Geoff Langdale](https://www.linkedin.com/feed/update/urn:li:activity:7246181875826733058?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7246181875826733058%2C7246455526627147776%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287246455526627147776%2Curn%3Ali%3Aactivity%3A7246181875826733058%29):]
+<span style="font-size: smaller; line-height: 0">The [simdjson](https://github.com/simdjson/simdjson) PSHUFB lookup is essentially borrowed from [Hyperscan](https://github.com/intel/hyperscan/)'s own [shufti](https://github.com/intel/hyperscan/blob/master/src/nfa/shufti.c)/Teddy ([shufti](https://github.com/intel/hyperscan/blob/master/src/nfa/shufti.c) is a acceleration technique for NFA/DFA execution, while Teddy is a full-on string matcher, but both use similar techniques). The code in question is in https://github.com/intel/hyperscan/blob/master/src/nfa/shufti.c and https://github.com/intel/hyperscan/blob/master/src/nfa/truffle.c albeit kind of difficult to read (since there's a lot of extra magic for all the various platforms etc). Shufti is a 2-PSHUFB thing that is used "usually", truffle is "this will always work" and uses a technique kind of similar to yours (albeit for different reasons).</span>
+:::
