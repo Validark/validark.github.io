@@ -327,7 +327,7 @@ findCharsInSet:
         ret
 ```
 
-The advantage of this strategy over the one used by Langdale and Lemire ([2019](https://arxiv.org/pdf/1902.08318)) for [simdjson](https://github.com/simdjson/simdjson) is that we can reuse the vector containing the upper nibbles as a a bit position (`1 << (c >> 4)`) if we want to do more *Vectorized Classification*. That means we can add more *Vectorized Classification* routines and only have to pay the cost for the lower nibbles, avoiding the need for an additional `vbroadcasti128+vpshufb` pair for the upper nibbles. To add another table, the additional overhead for Zen 3 is just `vbroadcasti128+vpshufb+vpand+vpcmpeqb+vpmovmskb`. For Zen 4, it's just `vbroadcasti128+vpshufb+vptestmb+kmovd`.
+The advantage of this strategy over the one used by Langdale and Lemire ([2019](https://arxiv.org/pdf/1902.08318)) for [simdjson](https://github.com/simdjson/simdjson) is that we can reuse the vector containing the upper nibbles as a bit position (`1 << (c >> 4)`) if we want to do more *Vectorized Classification*. That means we can add more *Vectorized Classification* routines and only have to pay the cost for the lower nibbles, avoiding the need for an additional `vbroadcasti128+vpshufb` pair for the upper nibbles. To add another table, the additional overhead for Zen 3 is just `vbroadcasti128+vpshufb+vpand+vpcmpeqb+vpmovmskb`. For Zen 4, it's just `vbroadcasti128+vpshufb+vptestmb+kmovd`.
 
 Dare I say this is...
 
