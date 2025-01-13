@@ -41,6 +41,7 @@ export default defineConfig({
       animationClass: 'transition-swup-', // see https://swup.js.org/options/#animationselector
       // the default value `transition-` cause transition delay
       // when the Tailwind class `transition-all` is used
+
       containers: ['main'],
       smoothScrolling: true,
       cache: true,
@@ -59,7 +60,7 @@ export default defineConfig({
       },
     }),
     svelte(),
-    sitemap(),
+    sitemap({ customPages: ['DynSDT', 'DynSDT/demo', 'presentations'] }),
     Compress({
       CSS: false,
       Image: false,

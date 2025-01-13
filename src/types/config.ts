@@ -83,4 +83,5 @@ export type BlogPostData = {
   nextTitle?: string
   nextSlug?: string
   customURL?: string
+  slides?: string
 }

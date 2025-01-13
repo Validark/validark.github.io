@@ -74,7 +74,7 @@ if (
           published: new Date(2022, 8, 15),
           description:
             'A paper on heap-like dynamic score-decomposed trie data structures for top-k autocomplete by Niles Salter.',
-          tags: [],
+          tags: ['autocomplete'],
           customURL: 'https://validark.github.io/DynSDT/',
         },
       },
@@ -87,7 +87,7 @@ if (
           published: new Date(2022, 8, 16),
           description:
             'A visual introduction to heap-like dynamic score-decomposed trie data structures for top-k autocomplete by Niles Salter.',
-          tags: [],
+          tags: ['autocomplete'],
           customURL: 'https://validark.github.io/DynSDT/demo/',
         },
       },
@@ -98,13 +98,89 @@ if (
           title: 'Real-time client-side autocomplete engine with aliasing',
           published: new Date(2022, 8, 16),
           description: '',
-          tags: [],
+          tags: ['autocomplete'],
           customURL: 'https://validark.github.io/DynSDT/web-autocomplete/',
         },
       },
     ],
   })
 }
+
+const presentation_posts: typeof posts = []
+
+presentation_posts.push(
+  {
+    slug: '',
+    data: {
+      body: '',
+      title: 'Intro to SIMD',
+      published: new Date(2024, 12, 12),
+      description:
+        'How a compression-based tokenizer greatly improves programming-language tokenizing throughput and how parse trees can be more efficiently stored and constructed',
+      tags: ['simd'],
+      customURL: 'https://www.youtube.com/watch?v=fajcuqMX-mo',
+      slides: 'https://validark.github.io/presentations/simd-intro',
+    },
+  },
+  {
+    slug: '',
+    data: {
+      body: '',
+      title: 'Hyper-Optimizing the Zig Parser (With Vector Compression!)',
+      published: new Date(2024, 10, 10),
+      description:
+        'How a compression-based tokenizer greatly improves programming-language tokenizing throughput and how parse trees can be more efficiently stored and constructed',
+      tags: ['simd'], // 'avx512'
+      customURL: 'https://www.youtube.com/watch?v=NM1FNB5nagk',
+    },
+  },
+  {
+    slug: '',
+    data: {
+      body: 'Slides available at https://validark.github.io/presentations/hyper-optimizing-zig-parser',
+      title: 'Hyper-Optimizing the Zig Parser',
+      published: new Date(2024, 5, 9),
+      description:
+        "A presentation on how SIMD and SWAR can be used to make a programming language's tokenizer faster by Niles Salter.",
+      tags: ['simd', 'aarch64'],
+      customURL: 'https://www.youtube.com/live/FDiUKafPs0U&t=210s',
+      slides:
+        'https://validark.github.io/presentations/hyper-optimizing-zig-parser',
+    },
+  },
+  {
+    slug: '',
+    data: {
+      body: 'Slides available at https://validark.github.io/presentations/accelerating-zig-parser',
+      title: 'Accelerating the Zig Parser',
+      published: new Date(2024, 1, 11),
+      description:
+        "A presentation on how SIMD and SWAR can be used to make a programming language's tokenizer faster by Niles Salter.",
+      tags: ['simd'],
+      customURL: 'https://www.youtube.com/watch?v=oN8LDpWuPWw&t=530s',
+      slides:
+        'https://validark.github.io/presentations/accelerating-zig-parser',
+    },
+  },
+)
+
+if (
+  !(Array.isArray(tags) && tags.length > 0) ||
+  (tags.length === 1 &&
+    presentation_posts
+      .reduce((a, e) => a.union(new Set(e.data.tags)), new Set(['all']))
+      .has(tags[0]))
+) {
+  groups.push({
+    groupBy: 'Presentations',
+    posts:
+      Array.isArray(tags) && tags.length > 0 && tags[0] !== 'all'
+        ? presentation_posts.filter(e => e.data.tags.includes(tags[0]))
+        : presentation_posts,
+  })
+}
+
+tags?.push('avx512')
 
 // href="https://validark.github.io/DynSDT/demo/"
 // href="https://validark.github.io/DynSDT/web-autocomplete/"
@@ -173,10 +249,22 @@ function formatTag(tag: string[]) {
                                     {post.data.title}
                             </div>
                             <!-- tag list -->
-                            <div class="hidden md:block md:w-[15%] text-left text-sm transition
-                            whitespace-nowrap overflow-ellipsis
-                            text-30"
+                            {
+                              post.data.tags && post.data.tags.length > 0 && !post.data.slides &&
+                            <div class="hidden md:block md:w-[15%] text-left text-sm transition whitespace-nowrap overflow-ellipsis text-30"
                             >{formatTag(post.data.tags)}</div>
+                            }
+
+                            {
+                            post.data.slides && <div class="hidden md:block md:w-[15%] text-left text-sm transition whitespace-nowrap overflow-ellipsis text-30"
+                            >{<span data_link={post.data.slides} class="slides-link" style="color: var(--primary)">&lt;slides&gt;</span>}</div>
+                           }
+
+                           <script>
+                            for (const slides_links of document.getElementsByClassName("slides-link")) {
+                                slides_links.innerHTML = `<a href="${slides_links.getAttribute("data_link")}">&lt;slides here&gt;</a>`;
+                            }
+                           </script>
                         </div>
                     </a>
                 ))}
