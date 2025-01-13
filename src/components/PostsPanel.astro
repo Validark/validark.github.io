@@ -168,7 +168,13 @@ if (
   !(Array.isArray(tags) && tags.length > 0) ||
   (tags.length === 1 &&
     presentation_posts
-      .reduce((a, e) => a.union(new Set(e.data.tags)), new Set(['all']))
+      .reduce(
+        (a, e) => {
+          for (const tag of e.data.tags) a.add(tag)
+          return a
+        },
+        new Set(['all']),
+      )
       .has(tags[0]))
 ) {
   groups.push({
@@ -179,8 +185,6 @@ if (
         : presentation_posts,
   })
 }
-
-tags?.push('avx512')
 
 // href="https://validark.github.io/DynSDT/demo/"
 // href="https://validark.github.io/DynSDT/web-autocomplete/"
