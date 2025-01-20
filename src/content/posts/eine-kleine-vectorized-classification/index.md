@@ -9,7 +9,7 @@ draft: false
 language: 'en-us'
 ---
 
-For the new version of my SIMD Zig parser being released on October 10, I came up with a slightly better technique for *Vectorized Classification* than the one used by Langdale and Lemire ([2019](https://arxiv.org/pdf/1902.08318)) for [simdjson](https://github.com/simdjson/simdjson), in that it stacks slightly better.
+For the new version of my SIMD Zig parser [I gave a talk about](https://www.youtube.com/watch?v=NM1FNB5nagk) on October 10, I came up with a slightly better technique for *Vectorized Classification* than the one used by Langdale and Lemire ([2019](https://arxiv.org/pdf/1902.08318)) for [simdjson](https://github.com/simdjson/simdjson), in that it stacks slightly better.
 
 *Vectorized Classification* solves the problem of quickly mapping some bytes to some sets. For my use case, I just want to figure out which characters in a vector called `chunk` match any of the following:
 
@@ -30,7 +30,7 @@ inline for (single_char_ops) |c|
 ```
 
 As you can see, the index we store data at is `c & 0xF` where `c` is each of `{ '~', ':', ';', '[', ']', '?', '(', ')', '{', '}', ',' }`. The data we associate with the low nibble given by `c & 0xF` is `1 << (c >> 4)`.
-This takes the upper nibble, and then shifts `1` left by that amount. This allows us to store up to 8 valid upper nibbles (corresponding to the number of bits in a byte), in the range <span style="white-space: nowrap">$\footnotesize [0, 7]$.</span> This isn't quite <span style="whitespace: nowrap">$\footnotesize [0, 15]$,</span> the actual range of a nibble (4 bits), but for our use-case, we only are matching ascii characters, so this limitation does not affect us. Then we just have to do the same transform `1 << (c >> 4)` on the data in `chunk` and do a bitwise `&` to test if the upper nibble we found matches one of the valid options.
+This takes the upper nibble, and then shifts `1` left by that amount. This allows us to store up to 8 valid upper nibbles (corresponding to the number of bits in a byte), in the range <span style="white-space: nowrap">$\footnotesize \left[0, 7\right]$.</span> This isn't quite <span style="whitespace: nowrap">$\footnotesize \left[0, 15\right]$,</span> the actual range of a nibble (4 bits), but for our use-case, we only are matching ascii characters, so this limitation does not affect us. Then we just have to do the same transform `1 << (c >> 4)` on the data in `chunk` and do a bitwise `&` to test if the upper nibble we found matches one of the valid options.
 
 E.g. `;` is `0x3B` in hex, so we do `table[0x3B & 0xF] |= 1 << (0x3B >> 4);`, which reduces to `table[0xB] |= 1 << 0x3;`, which becomes `table[0xB] |= 0b00001000;`. `[` is `0x5B`, so we do `table[0xB] |= 0b00100000;`. `{` is `0x7B`, so we do `table[0xB] |= 0b10000000;`. In the end, `table[0xB]` is set to `0b10101000`. This tells us that `3`, `5`, and `7` are the valid upper nibbles corresponding to a lower nibble of `0xB`.
 
@@ -92,23 +92,22 @@ foo:
         ret
 ```
 
-Luckily, there is a very easy way to map nibbles to a byte. Use `vpshufb` again!
+Luckily, there is a very easy way to map nibbles to a byte. Use `vpshufb` again! Actually this works out better for us because we can map upper nibbles in the range $\footnotesize \left[8, 15\right]$ to `0xFF`. We'll see why later.
 
 ```zig
 comptime var powers_of_2_up_to_128: [16]u8 = undefined;
-inline for (&powers_of_2_up_to_128, 0..) |*slot, i| slot.* = if (i < 8) @as(u8, 1) << i else 0;
+inline for (&powers_of_2_up_to_128, 0..) |*slot, i| slot.* = if (i < 8) @as(u8, 1) << i else 0xFF;
 
 const upper_nibbles_as_bit_pos = vpshufb(powers_of_2_up_to_128, chunk >> @splat(4));
 ```
 
-Much better! ([Godbolt link](https://zig.godbolt.org/#z:OYLghAFBqd5QCxAYwPYBMCmBRdBLAF1QCcAaPECAMzwBtMA7AQwFtMQByARg9KtQYEAysib0QXACx8BBAKoBnTAAUAHpwAMvAFYgAzKVpMGoAF55gpJfWQE8Ayo3QBhVLQCuLBiABMpJwAyeAyYAHKeAEaYxPoAbKQADqgKhPYMrh5evonJqQJBIeEsUTF68daYtmlCBEzEBBme3n4VVQI1dQQFYZHRcVa19Y1ZLYNdwT3FfWUAlFao7sTI7BxoDAoEANQb6JsApHoAIpsAAngsSfUQez4%2BOzc%2BMwcAQnsaAIJrG5sR7nR2DH2R1O50uBGut1%2B/2CDyeeleHze7yogP4qAgyAQ7gYAGsQKcAGqVIjECB6PybdwADhmM1OABUAJ4JTAAeSoGKxuLpewA7Aj3pshZtiJgCItAScmAoICcmSz2ZzsTi5qcFAkjOCuLSgc4Ds5TgRiNjRARMEruS8kXzDtaPphVGDNijnahUD4LXjCcSSGSKdSdXLmWyOZjlTz%2BUjhZsvltahF6EDjmgLnY2K70TsAHQpFjoLOillMcEnFKmEOy%2BUVsPc1XZ3P5%2By1CDU0ibLixHl6PXdtUa4sQSS0uEC6Oi8XEQEANwSCixVAiEHj9DbNZxQOwB2wfc1g9pVsRvNtiI%2BLpnc/cC6XTAT7E2xkZBGDbeC%2BGWCnxQYVHOXmEDVcVX8I1HYU8CoTZZWCVxU3Oc0dT5EDoyFKc6hFTAFHcWgCE/ACOVfPB3y7Y5sSwGgQnQA9BSQoV%2BGICCNCzLMTgiQghDwctFS/Ct8MIukAHpNhpfZeWcPA%2BQNBCo2opDY02V8HSTOSGDfdC9gAVmeMS1NteEpOk4VRQwrD1M09TjgOY4wIg%2BTVA3CzNg0VQqQ0OkNE2TBaCUTZfxMmz9h8NSIOY1j2IrLjAJvegdQEmkzMo/SbTtKjqPHCU0KMgh4uFRKT2SmMBG%2BNgCAQDAFEUjZjVsYTEKQh0zUnZ1JQeWhaCnFgsyc2IsyYKdVDUrgfCzWd5yzCIs36nwHllIlbF9WJpEpGk2xOGaSQgea2wDOkVp9UkNsWkc9Nq1R6tRJrbhatqOqpLqetUQbhsvUapp22bSXJTalu9N6/U%2BwNVt9D6Dqy6i6uiM7Tma1r2s6nMFCUPQhovKhRqzAaqRegHSQ7P7lqxiAcYO7b8cJgMQeEnSBSO1KGoUAB3QhMSC3Dr1veDIw%2BfTXrW/aAyTLc5PAjFUBg9Ns3pOpgDFa6uqoTBi0WTAhDFAAJaUIChLDgizZAEncLM5YVwy2263qJoiOmdSKkr0AUJioau2G7ompGRrGiapt/F9lII9C6Q8ryThTBI6BwYhiF9B5nGUORvMlsVNiMZAcTKjCEidWjNnPecIg9245iO6NucB/0hIsgWrOF0XMG2Ah8wl4gpYIGWDflicldV9XNYBHW9dbo30JNu7Hjpa3Svti7oZb4fXaeiJPcizBvZUhR/c8mug5FkP6GwcPI9uaPY8GJvE6YZPU/cdOSC2TPs8vCIAtiWFSEL4Vi%2Bx%2BIDv5vRt0r4O0xruLeOzdYaG3bsrAgasZTd21rrfWYDFYKBNvDBGVsxQ2zticB2MMbpwwRrPFGY10YL1vMvX2q93Lr1OMHUOu8I6kijjHOOjcE5JxTtsS%2BGcSBZ0eguYh%2BcX6c2kgHGu5cf7UK3rQvepJsxUBYM3f%2BsFlDEGCOCB4ABJBgKFaB4F2JLTwjA4zBk2AkaUShdhEB4cjCI%2BJJJHnUs4BgDwTYIXCj%2BReTwjy0kEXlRKulDyHA4HMWgnA1K8G8NwXgqBOAAC0LDbAWEsURPg9B6F4NhDgWhvEIHllgGIEA5h4jUgxLgVIfAaF5KkvQXBeRcDUpIAwISOCSF4CwCQGgNCkAiVoUg0SOC8A/J0jJWTSBwFgEgGh9AyAUCrtvPopgNBcD0J0mgWFogfg1poXgLFmDEEZJwHgpAdl1EZKyCI2hiQHN4CmNgghWQMFoPszJvAsC/GAM4MQnkrmkCwCwYwwBxDPJ%2BXgUUVQpzoS2f4VQlR3Bmm%2BaojykKdERGICc1wWBIVGnON88FxAIjJEwIcTAfyTA6JMFsuYVAjDAAUASPAmA6ashZBEw5/BBAiDEOwKQMhBCKBUOoIFuguCGH%2BSAcwlhkUfkgHMVACQ7AFU4AAWlZJsAASh5eWSgABi0otiKuPgnTqAB9eaiqyXuFsoqlgcCLKmC0dENJvTcUqKwFKgpVgNVtG8BAJwwxvDCsCBMIoJQJA5BSPK9IbgmihqSOGtI3Rg19GFa0CNHQhhRqyMmz1qaxgJt6DEZNYw/Who2J0PNUwC1zAUIk5Y%2BhgmhPCZCvpmxxUOTRojNyEBcCEG4TcVJMx0kUrmDkpgeTKCFJAJIAAnFmKkNSp0%2BFiEuspVJJBqSpGpQwnAWmkDaVwDpXSm2cAGSAIZQ6t0cB8I2oFfTB3PO8bilIDhJBAA%3D%3D%3D))
+Much better emit! ([Godbolt link](https://zig.godbolt.org/#z:OYLghAFBqd5QCxAYwPYBMCmBRdBLAF1QCcAaPECAMzwBtMA7AQwFtMQByARg9KtQYEAysib0QXACx8BBAKoBnTAAUAHpwAMvAFYgAzKVpMGoAF55gpJfWQE8Ayo3QBhVLQCuLBiABMpJwAyeAyYAHKeAEaYxBJ%2BAA6oCoT2DK4eXr6kCUl2AkEh4SxRMVx%2B1pi2KUIETMQEaZ7eZZg2uQzVtQT5YZHRsVY1dQ0ZZYNdwT1FfaUAlFao7sTI7BxoDAoEANQb6JsApHoAIpsAAngsCXUQez4%2BOzc%2BMwcAQnsaAIJrG5sR7nR2DH2R1O50uBGut1%2B/2CDyeeleHze7yogPccTi0QA%2Bgw8BEIvQFJimISIoRMdlsUw8AA3TAQZAIdwMADWIFOADUKkRiBA9H5Nu4ABwzGanAAqAE8MQB5Kj0xks0V7ADsCPemw1m2ImAIi0BJ2JEBOkplcoZTOZc1OCjiRnBXBFQOcB2cpwIxCZogIdPNipeSJVhwDH0wqjBmxRAvRWJxeIJRJJZOy8otbJOnNsJF5/KFjuNUswspTiv2qqRms2aAudjYm2ptU2CQA7tFCagqJifJi0ZiiJjSoK2XsAKzPLgANhHhyFQOOTKwNBC6H9HwrwVoEwjJE2EPHzdbmPbne7cV7qH7PkFpE2GgAdLelcrnAAqBS0VAEa94FWut8f2/PrOmx4FQO54E6mzCqchpCteDpOi6wGbC0Sg3qoABi6EruqmrarqxCAtScQKIyVARBA%2B7EG2HZdj2fYDtevrMkC2AHNg1q2kw4KSCK2GBsGyKEcRpHkTU%2BLsJsxgSgQBZfgw%2BDLAobJSTJGKiiBO4nEkpiFnK%2BamhAwQKZgCiOmx1p4DpRb6bpEBifQIqijZRZGXgimiihmDigWRb2Zgj5qhWXxbEIcgAOJhdgQhitghyYuy2DOJiQgAJIAFrYEOejoVWcQ1pgmLBFsBzHDst5JCw6Dle4wDACZBAZtyASMMABAIOhJDOHE7gQLBPx/LQAK3sg3Vwmq5aahpRrBK41bnHSorbqFEVRTFcUJUlqUZbOJWbAw7i0LQAUTRWGr1sQWomQdBBpiatmue5QHzpgi6YMu8Inad/AXRAd63icpLCJZtnOXKD0mY6AD0kGPs435PqWgWncjwXAfJoZAeDCgjs837DkGH2rsjp3ago1043jxy7VNRkY2xu0aKogoaKKGjIbQqF%2BRT6OqPsPjDppgNCMD1l3b5TDiVDMNTthxOlkGiJE8jeF6pdZODbLmr8YrOEalNWki3pYtg/JbkQ0qejsQbVlGz5cp%2BY5iOfRWKsEXWwnuGREBlRVVXahiXFGtpIPG4ZpvuVaDtycZpmaxq2vvJ9%2BvB6Ldt2RLDkW%2Bxy2RdFsXxYlyXpdgt4HOhx1K6d52Np0Sn7KO1sh2nDuitDOerfnG1FxlpfZVO6Zclm7d5%2BthdbSXZfXrmT3o6971I8j66bt9O43HutfXn9sOvu%2Bn7AT%2BTuV3Lf4EABQFESRnvkT75xVaG7pMLY6fiV%2BmyAcPa0F5txe9%2Bh14f53MeP8y5WhvpVW899iCP3BFjV%2B79wq50/l3cev9/4II7qPb%2BPcQFjWdlrZUCtdYkx1KrAGhBnDEnBHEWuuDK4J0%2BqjNgbUMAKCAhsD0thD5EIrPfaIgJIwnAeIdakLBbxM3HLeJg1JVDDlKLeD2VBbwRFvLInwDwjSNSzOOaQAphTXgHpmHk2ip7CicpooxOjcxx1Orwt2AihG0BEWIwUEipGqB8PIy%2BiiIjqIMdybMJirR%2BKzHyQJZjB48lCbo2h3DNS2P4fqBxTjxHlQUEoPQnjSJKNvAOXx5iIATkCfo/JhTonhMMQU8cgTrH8UJonSurtAQKCbIQBkmlQ4ty4XLYJFjAk7UtsBUC9JUBzVrGVMUtQ6qnxSVQTAXFFiYCEDqAAEoaKEg1gjDW6reWZ8zSbXkkdI1REQmyOiYQgFh/0kmiJSW41RmTPbZNUeovy0czamXZqhE4uU6A4GIMQLMDxnDKDkJsQYUzNhGGQMyVhZN0QkC2CvC%2BIlnm3DmHgjUPSAnRP6exKauV8rbAIFVCZxApnOIkbs/CiyVlrIGkNEa7gdlzOpQoA5bjHiinOZcwRtxhE3JcYc9xDzvEvIzpgN5j1PKnB%2BfQbA/zAW3GBaC8FOpIWPxhdsNE4YkUKIiPzScaLSAYo5BEypfSSrmXxSMvK80iUksmTqClzK9k0oIKshQEB1kMu2VShZbLNipPSWcnUFz0AKCuXyxxAqJFpPSSK7JuTbjP3oJKiGnyvLfJtb8%2BVAKeRApBWCx1WwoWarhTq7cyKr5JseMao%2BcSOZeUtQMrNFwc0Kp5GVKgLBT4EvmsoYgRUIQ%2BBSgwesG5diTM8IwLYqkvLULSW9MFqB3ZeIiEOMsBCRzOAYA8A5KpnigxTf5QMIo61ENqeNAhHA5i0E4MOXg3gOBaFIKgTgaULDbAWEsJtPg9B6F4DdZ9N65gIDmVgGIEA5ismHHeLggofAaGVP%2BvQXBlRcGHJIAwd6OCSF4CwCQGgNCkCfS%2Bt9HBeBKWI0BrQcw4CwCQLK6I5BKBMZiKYDQXA9DEZoINVslB13AdIKSZgxAJScB4MJ4ItQJTSgiNoLkEneBVjYIIaUDBaDiaE1gX4wAKGHSUtwXgWAWDGGAOIbTeBtSVFpIZl9oYKjuG9Ep8gggWiaF4BuCIUCxOuCwB50g7pzgudpMQCIiRMCHEwKZkwG4TAebmFQIwwAFDsjwJgJs0oMRPsk/wQQIgxDsCkDIQQigVDqCE7oLghgzMgHMJYLzSlIBzFQLagQhmAC00pNgACUWhzKUOhShmwOuqq2OIzE2iOtxfcLzDrLBGUlVMGO6IAHX2hcHVgJrUGrD9cqA4CAThhhNGI4ECYhRij6GkNkZIAhju%2BGIzdto3QLt9D0NIco%2B32hjHu8qXbrQqhjBe70GIBgNidF%2BwMTowOpig7mAob9yx9C3vvY%2BgL5HNj1ZvDkjJbMIC4EINuG4/6ZiAYS6B8DfQduskkAATlvIKNDtOfDjlZwhwUkhhyCmHIYTgeHSAEa4ERkj6POCUZANR8nvOOA%2BDR0J8jZPgNntC0kBwkggA))
 
 ```asm
 .LCPI0_0:
-        .zero   32,15
-        .zero   32,1
+        ...
 .LCPI0_2:
-        .byte   1
+        ...
 foo2:
         vpsrlw  ymm0, ymm0, 4
         vpand   ymm0, ymm0, ymmword ptr [rip + .LCPI0_0]
@@ -120,9 +119,7 @@ foo2:
 Now we simply bitwise `&` the two together, and check if it is non-0 on AVX-512 targets, else we check it for equality against the `upper_nibbles_as_bit_pos` bitstring. I wrote a helper function for this:
 
 ```zig
-fn vptest(a: anytype, b: anytype) std.meta.Int(.unsigned, @typeInfo(@TypeOf(a, b)).vector.len) {
-	assert(std.simd.countTrues(@popCount(a) == @as(@TypeOf(a, b), @splat(1))) == @typeInfo(@TypeOf(a, b)).vector.len);
-
+fn intersect_byte_halves(a: anytype, b: anytype) std.meta.Int(.unsigned, @typeInfo(@TypeOf(a, b)).vector.len) {
 	return @bitCast(if (comptime std.Target.x86.featureSetHas(builtin.cpu.features, .avx512bw))
 		@as(@TypeOf(a, b), @splat(0)) != (a & b)
 	else
@@ -139,13 +136,18 @@ const single_char_ops = [_]u8{ '~', ':', ';', '[', ']', '?', '(', ')', '{', '}',
 comptime var table: @Vector(16, u8) = @splat(0);
 inline for (single_char_ops) |c| table[c & 0xF] |= 1 << (c >> 4);
 comptime var powers_of_2_up_to_128: [16]u8 = undefined;
-inline for (&powers_of_2_up_to_128, 0..) |*slot, i| slot.* = if (i < 8) @as(u8, 1) << i else 0;
+inline for (&powers_of_2_up_to_128, 0..) |*slot, i| slot.* = if (i < 8) @as(u8, 1) << i else 0xFF;
 
 const upper_nibbles_as_bit_pos = vpshufb(powers_of_2_up_to_128, chunk >> @splat(4));
-const symbol_mask = vptest(upper_nibbles_as_bit_pos, vpshufb(table, chunk));
+const symbol_mask = intersect_byte_halves(upper_nibbles_as_bit_pos, vpshufb(table, chunk));
 ```
 
-Compiled for Zen 3, we get ([Godbolt link](https://zig.godbolt.org/#z:OYLghAFBqd5QCxAYwPYBMCmBRdBLAF1QCcAaPECAMzwBtMA7AQwFtMQByARg9KtQYEAysib0QXACx8BBAKoBnTAAUAHpwAMvAFYgAzKVpMGoAF55gpJfWQE8Ayo3QBhVLQCuLBiEldSTgBk8BkwAOU8AI0xiEAA2UgAHVAVCewZXDy8fPySUuwEgkPCWKJj460xbNKECJmICDM9vXytMG3yGGrqCQrDI6LirWvrGrJaFYZ7gvpKB2IBKK1R3YmR2DjQGCYBqCfRtgFI9ABFtgAE8FiT6iAOAJju9%2B7v5o4AhA40AQU2diPc6HYGIcTudLtcCLcHv9AcFnq89B9vr8CNsmAolPUQac9gA6LD/YC49GYgjvT5fCko7ZCOQAcTp2CEABVsMcAPoANWwznZQgAkgAtbDY3YEdC4lIsCUKdzAYCYCacypEYgBRjAAgIABiJGcCXcEHcAA5SNsYbQgbjkAaEUifgIds4EO4GABrUVnZW2EgQWkMpmsjnc3kC4W4o7as0mu0UimYVQQ7ZUYE0BguBB1BT8zqYSHIF3ukDnb2qiB6O7R43zeZiiVsWq4nOQ3GulLAELoM1nAgATwSmBz/AgZ2Z/cwAHkqBAC663TXcQA3FUkXH0Bi1g4Adnt2z322pKRM9HZBbq7NQCQUooOAFY3uy78cTdu3tswBwAH4fs0f8C8d8OHeH9ALvN4QI/J8IKAvRtWgiBoPmaDX2Qrdjmg0gP0ONDyW%2BfcD1QK47DYbZFzqbZaFQVA3XcBJ2VqCJxBLFdiAgLh4m2GNPQUBIjEhDRYzw/dgloaZkxIbYICPYATzPYgLyvTct2cZBt2cCiqJouiGPoMDkEOO5Ym2DRVG1J9sOcI5Ti4EFLL0dSZxBbAjhFSRBK%2BfC0CIy5MFI8ikgAd2iBQLyodk7nZWj6NQdkuDuY1izA9inxNUVXSwNNMHQXCPOEhhRJCcTiEk%2B5YkC4LQvCyLtJiuLTWM3FcSU5wACoFEoggzTwNTdg63EWtFPAqEkvBbO2atznRI16q4Td7KOdTRraJRjJyilPMdVFaIHeSGDwCJGMVdl0XZCJCHZXJRUXK8XSoCIIHK4gQtQMKIqiohYvis1Z3dJyXPOHi%2BIgNz3I2rZUQUXsSjcdkWHRD0rNIhICEVSFtuidk9oO%2BgQpOs6CAu5IzWuhRbvuyjqPephDu%2Bwt51B/diDzFZgUh6HaFh%2BG1pw74KRTJGUYmCAmGLYxez7AczQiUWGHF8dazxBsmCbQQIFbLYLE7bsJcHBhh1Hccp2FqWF2XH1iDXRglPtT4AE4SWiSE8SlCU0FdAhmWIdxFRHJIElcd3hbm45EbOKaDYHI2mBN7tAaYSFZprbFQ51odUBHMdI%2BnaPzVNljLY3NbeY0W2mYIFnznx5x0UhIbJK85GfLrXFmTqBUCFxVRjViXEqEweOVkwIQ8wACSmi0rRtdxe/78umYUM1iUXVRbziiIAprOMS7tsOFAzw3s5jgHePjiABNrMAwER4WDKMiJXmL23lswLfbbtphk9BG/Stz9ztxD4uXx%2BYkzJhAHS7A0Syx1l1dMeA1gKBlnLActY64jhSKYSc04I6YIgMEfA8Ck7/TOOgnB2CjbgJrLWMh048FwMVLWZ%2B5xM44IodhXcwlhojmCK4bybAICEJ3OtfC%2B4yLFXnu4S0xZqG4NgQQtK6ZMCZWyoiIRwiiqSQ0I1M4%2BMhB4AwUbaRtCCG1gAPTjWat1ZSbDVFqP3NSPBCZBqyMVGBbqt4Q4qKErYxmioJFknvG404iNUEONUH9UEJljQCWMtsRh4DXEKLCfcW8kltGEF0forBzDyHU3oEnMx1Ynw5W8f/LeuU1FlwruIy0xT9ylMAfhVBxC9GkOyTQ5xChCF6BFM0zJ%2B8s5gNyZgSh1ivHCMqcQYEID3B3SkuKSUlwJRMwHKfXprSD4yPwfQxY2wKEwK2Z02pe56mUjGU0khBi2mDMOl0kU/pGQsjZFyHkfIhTYAjLBa2Nj8KiO2AkboCDDj3jWZcjZFDTE0npA8oMzzQxvI%2BWZdxXoWJ%2BihYGJ5IZXnhkjFWYOnEFFKKOcIkSYl%2BDFShGVAFZpNFNQsm1DqXUeqvm%2BbY9qqAO4DURtM2ZztFm4gTAQYgTBbDXPoF1bYA17nouDC8sM7ycWQoDI8mVcLsWfLNLy6U/LVCCuFbXDp4rJVouVbCrF8rYJmilSazFcqEWb08eU4RJzvETOBGkhoNcHoAoZscnmpzHXUgbAgDA15EYTC9rYUZjr8ICuiKmN1zxaC0EXCwTu3cl4rziriG6MzcQRFxKvO4zwRyll9LEaQnFqzdlLaxctuKqE1ogHWytPrhGxsmcmBNDwk0prTT3Jgy87jZtJrmiIxbkXm3LJWFt1aUUVnrcxSd86W1EpjTquNnbziJuTamruPcMRKD0MO26ebcR1XHY29iuLZ2TqvS2htKK70xiJaUh1NjXW7ACoQAsqSrngqjd4idZZm1cSsv9VBDdiK%2BTxK3Yg7c%2B0zwHkzYeBAx57wnsEa0BpENz0VIvAdma7jryTkGkNuIzjbt7XujNhbj2joLXFYt4D9l0M6bE2gK0zgNzoDgYgxBfTPGcMoOQuy255gosKt015ZQJCTGSpGI67qFvhKQFle4gO%2BmXaBk44HOGQabjBsTHdqN9yQ0PUe48ASWkw1PHDg8F7bAzS8WspH0AKHI5R3d6aCNDpzVQPNTGhksbkYwrjhEEg8ewHxgTDwhMieGO3CTyApO7G2iQVE8nuURDuLeWIKm1OLrLE%2BiaYHunbAg%2BFqDzdYPwZM7PQeKG0MQAwwwLD09TO4Yc5KDEmA9AkbzMGtzHnu07oQwe3rdH/P5vPQ8UVmBgv0PY5x7j9Aov8dYoJ4Tom4PiaMMl6TaWsSZb8xEGbLxVNjJjRx3ypWekrd4%2BtuZEoqAsA7vptgyhiDBEhM8HMZFRL7Dbp4RgqIdZ/IdvsIgCmyaJUEThW8zgGDPEXq%2BaRFD/41gu4619Ns0IcEWLQTgt5eDeG4LwVAnBBQWF2MsVYN27h6D0LwAgmh8eLAQP3LAMR%2BGkDdHEI9khcu2y4FuDQGhjS3geHcPwhOOCSF4CwCQYvSCk60KQCnHBeAII0KQFnHAtCLDgLAGAiAUDhZ42QCgM5zf0BiKYQVc4%2BCAmCpQaW%2BveBnWYMQXsnAeCkE93UXsE4IjaBVL73gXk2CCAnPlH37vSAEjlNXJNCCycJ8wHDY86w1f4CZlUZcqe1cJkqO4FG4fyCCDaKzww%2B0hXe9cFgavgrLjl%2BXMQCIyRMDHAz8YGSwRQDu8WFQIwwAFCcjwJgAKE4Byk79/wQQIgxDsCkDIQQigVDqHj7oSsRgTAgHMJYUSEQEGQEWJeDoqeAC0E5tgACU2j9yUNqGu2xL8JfE3u9k5bL8FXcGEy/LAU8VkpgDAbeTO6ubeX2WAJ%2BPOFQVQDgEATgow3gXAOugQ0wxQpQEgiQyQqQAgyBSuOBeQaQvQmBAwfgcBHQXQIwbgTQhBlB1QkwpB/QMQFBkwBBqBQw3QzBswrBiwCgtOaw%2BgBOROJO1eGu2wB%2BuyXsv0EAuAhAEk9wjO8wzOrOmOHOTAXOlAiwfOegPct4kgeg4udwtswukgW4Fhts8Qsu8upAiut4Ouqu5OnAWuIAOueuBupARupu92lulAvh%2B%2BDu7oTuloLuzW1eAe3u5ekRQeIeYeaekeIOMetAceOemAhIyeHG5eWAmeMk2evAueKoeABe1exeyApe6wfu32Ve8eR%2BdevYDe%2BRuuX2iuaebeHeSg3euRBUA%2Bnhw%2BTAo%2B4%2Bk%2B0%2BjA5e8%2Bwgog4gK%2B4x6%2Bag1eugMuve%2B%2BFgNex%2B8AZ%2BjcjonA1%2Bd%2BD%2B6ImAz%2BOwb%2BRm2wn%2B3%2Bv%2B/%2BgBBowBoB0QthqAkBeA0B6xrQ7QaQjg6YHBlY6BRQLBIAt4BguQeB6QtBWQcURBwJPBWBAJrxRRAg1BDQoJKBlYDB8JTBGBfxMJEw3QXxXB9QUJAwAJ/Bgh7AfWhgohKu4hnAkh1OQRHoch%2BAqoBkyhqhg%2B7OnOAwPONhCu/xjhVJmuVgbhuuahOh%2Bg%2BhhhxhphUgFhW4Vh5JHA4BTh6uLhwpbJ8pdwYh8eGurJBuiwbeKQDgkgQAA%3D)):
+
+:::note
+This properly produces a `0` corresponding to bytes in `chunk` in the range $\footnotesize \left[\mathrm{0x80}, \mathrm{0xFF}\right]$. This is because `vpshufb(table, chunk)` will produce a `0` for bytes in `chunk` in the range $\footnotesize \left[\mathrm{0x80}, \mathrm{0xFF}\right]$ and `vpshufb(powers_of_2_up_to_128, chunk >> @splat(4))` will produce `0xFF` for them. `intersect_byte_halves` on AVX-512 will do `0 != (a & b)`, where `a` is `0xFF` and `b` is `0`, which will reduce to `0 != 0`, which is `false`. On non-AVX-512 targets, `intersect_byte_halves` will do `a == (a & b)`. Substituting the same values for `a` and `b`, we get `0xFF == (0xFF & 0)`. This properly produces `false` as well.
+:::
+
+Compiled for Zen 3, we get ([Godbolt link](https://zig.godbolt.org/#z:OYLghAFBqd5QCxAYwPYBMCmBRdBLAF1QCcAaPECAMzwBtMA7AQwFtMQByARg9KtQYEAysib0QXACx8BBAKoBnTAAUAHpwAMvAFYgAzKVpMGoAF55gpJfWQE8Ayo3QBhVLQCuLBiABMAVlInABk8BkwAOU8AI0xiXw1SAAdUBUJ7BlcPL18A5NS7ARCwyJYYuJ8E60xbdKECJmICTM9vaSqagTqGgiKI6Nj4q3rG5uy24Z7QvtKBioBKK1R3YmR2DjQGBQIAai30bYBSPQARbYABPBZkxogDnx89u585o4AhA40AQQ2t7aj3Oh2BiHE7nS7XAi3e7/QGhJ4vPTvL4/HZMBRKRog057AB0WH%2BwBxaIxBDeH0%2B5JR2yEcgA4rTsEIACrYY4AfQAathnGyhABJABa2CxuwI6BxqRY4oU7mAwEwWw51SIxCCjGABAQADESM5Eu4IO4ABykP4A2hAnHIfUIpHfAS/ZwIdwMADWIrOStsJAgNPpjJZ7K5PP5QpxRy1puNtvJ5Mwqgh2yowJoDBcCAaCj5DCEmEhyGdbpA5y9Kogeh8UaNczmovFbHqOOzkJxLtSwDC6FNZwIAE9Ephs/wIGcmf3MAB5KgQAsu101nEAN2VJBx9AYtYOAHY7ds99sqakTPQ2QWGmzUIkFCKDn5Xmzb8djdvXtswBwAH7v03v8C8N8cG834AberzAe%2Bj7gYBehalBEBQXMUEvkhW7HFBpDvocqFkl8%2B4HqgVx2Gw2yLg02y0KgqCuu4iRsvUUTiCWK7EBAXAAGxVpuoJnAoiRGJCGgxrh%2B6hLQUxJiQ2wQEewAnmexAXlem5bs4yDbs45GUdRtH0fQoHIIcPhsdsGiqFqj5Yc4RynFwIJWXoGkziC2BHMKkhCZ8eFoIRlyYCRZHJAA7rECgXlQbI%2BGyNF0agbJcD4RrFqB7GPsaIoulgqaYOgOGeSJDBiWEEnEFJdxsUFIVhRFUU6bF8UmiZOI4spzgAFQKBRBCmng6m7J1OKtSKeBUFJeB2ds1bnGihoNVwXH2RpY2YLQSgmWZ5mIrGwl7lSNEDgpDB4FEDEKmyaJslEhBsnkIqLlezpUFEEAVcQoWoOFkXRUQcUJaas5us5rnnLx/EQO5HleQ6OwKL2pRuGyLBou61nbKEBAhcqF29ujbIZrQy4KIaiT7Wyh3HfQoXnZdBDXSkpp3QoD1PRRVFfUwJ1/YW84Q/uxB5sswIw3DtAI0juXbscW2fMmqOCBjthYzjeMExATDFsY2PjqaUTqwwmsDrWuINkwTaCBArabBYnbdn2A5DqgI5jgOU6q9rC7Lt6xBrowyl2h8ACcxKxJCuKSuKaAugQTLEO4CojskiSuJHqtcZL3HTaO44u0wbvdiDTCQnNNZYijPbjvbjtZ9OOd/O7zHexu4tfAHfMEAL5zU84aKQsNUneYkRF%2BbiTINPKBA4qoRpsTiVCYAXyyYLmBAABLTTCFqhFa%2Boz3Pbd8woppEouqh%2BPFUSBTWW3%2BwHZwZ07k7V7nwN8QXECCbWYBgCjquGcZUQvM3DQ/tlpKCvgHJgJdQQ/zKrXDyEspYywZkzCAul2DbA1rbTA3U0x4FWAoXW%2BtMC1l7iOVIpgH6V2dtOUI%2BA8HFyBjxPA5CXaZyoSg9m9Aay1lYRQmhuCFS1hAX5HhLtUG%2B3JHhEhFwMgEQHr5CA9CdwSLwvuUiJV97uAtMWER1CcF0PSmmTAWUcqbW2io/gJU35NTONTIQTCKE6IgHwuhtYAD0E0Wo9RUlhXcKi/FUhofGIaeiFSgR6n4NOvi/F4Q0RaMJFkUYkMCaoQGoJTJGkEiZbYQjtioLCYYlJdw/BSRsYQOxzDpyOLEW4jxj5crRKwpLQBeU/Gt3brE0kpiWmNKlpIkapD7EsPvi7ZxAiuLCkYRUyhFDqniLMTE/mxBgRIPcI9aSYoJSXHFHzAcr9JkOOGbo2hYzTRiOwcchQPM9zwOaX0kpZCDlV3YSdehehhR%2BgZMyVknJuS8kFNgcMME5ndLwmo7YiRuj4MOHefZQynnVO2O4j5AZvnBj%2BWGCMj5PTMV9HST5gYfkhn%2BYCyM2xowGMylMExUSVGiXEhY0qRkIWNAPo1Zqll2qdW6r1F8yiGl7g6qgceg0UYrLWaHLZOJ4wEGIEwWwzz6DdW2INZFXygy/NDACiMppVUErRZqklCw6ybKlFK1QMq5U9xCaysaKq8UovVUSjFMEdX2rVYS9FWqgVXJUTckFvNFnAlKU0buz1IU%2Br9Xy/CmwdgNgQBga8KMtgx1sD4qNeFpWxBTEGp4tB8YsAnlPI%2BJ94o4nuqsnEUQcSnx8E8EcpYfRsWkGS6s3YG0sSbZxbh7aICdpbT6jN5qs1JhzfcPNi4C2T2nkwY%2BPgy2MwrVEOt2LPblkrP2ttOKKxdqYqu7d/b6nRMzUskd5xc35sLdPdESg9DzoepWnE9Vl09vYpxTdq7X39u7Tiz90ZD3XOwl0qNbST0KECoQAsJTDkKqIcChpK6yx9vJdZIGJD%2B6D2NSPYgY9L073nnzJeq9Cbr0tNadweG94KkPjOktPhz7FzjQmnEZxz0TtwzRmtd7F3VvinW1B5z%2BGXOyStYR/c6A4GIMQH0TxnDKDkLk0eeZyJytdNeGUxMSA7AZWKqINb4SkHTfuBDPp93IZOKh/p6HfKYcU%2BPKdFGF6EbXuaUj29Z74ao9sYtzxayMfQAoZjrHJ1Fpo3O8tVBK18Y4Vg2WFzBEifOGJ%2Bg2BJPSfuLJ%2BTwwx7KeQKp3Ye1NPFRIuFqI/g2L6cM3uYzLFf2TRQ281GlnZEYeHrZ3D7nKNOeIy5zeZGHP70PtezAegGN5njf5wLY6L32aG7e8LD6n33BgwJ/ROSzhJYk1JliMm5MKew0powuW1MFcxNpkri3ngGfmfuHJ9WJkbZS1t9Z4oqAsHHlZtgyhiBoyhD4bMpExL7FHp4RgOxMHgqDvsIgxWF2PSSko7CfhnAMCeIfF8VTosvFQjWK73T4FAdQhwBYtBOB%2BF4N4DgWhSCoE4AKCwuwlgrD8ncPQeheAEE0EThYCA55YDiAo0groQBsVvZIPwbF/ZcC3BoDQRo/D3B8FwQwnBJC8BYBIGXpAKdU5pxwXg%2BCEgc8p0T0gcBYAwEQCgWR4myAUBnNb%2BgcRTAyrnHwQEIVKA62N6QS6zBiC9k4DwH3oQGi9gnFEbQypA%2B8G8mwQQE4CoB%2B9/iWUXc834O4LwLAiNjxrCp/gPmNQCac8CKoao7h0bR/IHLEn3uxJRFlf71wWAS8ysuFX5cxAogpEwMcTAOfZKhFAMbhYVAjDAAUByPAmBAoTgHBToP/BBAiDEOwKQMhBCKBUOob3uhKxGBMCAcwlh6/4MgAsS8BRNicAALQTm2AAJWWnPJQWpu7bBv1lpTU62RNpv4VdwFJG/FgMjayUwBgTvNnanTvb7LAM/AXdoK/RwNMUYbwJXYIKYEoMoCQJIFINIAQVAnAvIfAhgXoLAgYJXRA2oCYQgyg5/DoHMCYMg/oOISgmgtwFoHArYboZgmYVghYBQRnVYfQYnUncnEvXXbYY/XJGOAGCAXAQgSSFnEbdnTnHHHnJgPnSgBYIXPQaePwSQPQWXHwf2SXSQLcCw/2DiWvVXUgdXPwBIbXXgXXfXEAQ3NQ03C3CAJADbW3SgXwo/F3N0N3C0D3CAL3KnX3UPKvKI/3cPSPWwKvWPUHBPWgJPfPTAAkNPFaKvbPYwWSPPLPPAQvOwYvb3eMcvSvTPavdGWvKnevRvXsZvQo0gNvdXaozvbvJQPvAfQqYfLQUfcfSfafWfefKvJfYQUQcQdfCYrfNQEvXQJXA/MwCwQwI6eAi/ORB0W/e/J/egNETAN/X4T/WzbYH/P/AAoAkA/UMAiA2IWw1AGAvAOA%2BAAQ%2BgpAiAJwWgwINMXg7ApXYgq/b4wE9IP4igqwd46g7ob4qgzoJgzAlgrg9grINAoYHghEvgiQAQoQ9gEbZXDgMnLXCQzgKQ%2BnII90eQ/AFUQyVnOYVQkfbnXnAYAXGwtXEABwok73FwqwNw1otQnQ/QfQww4w0wqQCwrcKw/EqApw6nTgekgY0QjgHwcQrkuUvkhk0gTvVIBwSQIAA%3D%3D%3D)):
 
 <div id="issue-dump2" style="display: flex; flex-direction: column; align-items: center; align-self: flex-start">
 
@@ -167,39 +169,9 @@ Compiled for Zen 3, we get ([Godbolt link](https://zig.godbolt.org/#z:OYLghAFBqd
 .LCPI0_0:
         .zero   32,15
 .LCPI0_3:
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   4
-        .byte   4
-        .byte   8
-        .byte   168
-        .byte   4
-        .byte   160
-        .byte   128
-        .byte   8
+        ...
 .LCPI0_4:
-        .byte   1
-        .byte   2
-        .byte   4
-        .byte   8
-        .byte   16
-        .byte   32
-        .byte   64
-        .byte   128
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
+        ...
 findCharsInSet:
         vpsrlw  ymm1, ymm0, 4
         vbroadcasti128  ymm3, xmmword ptr [rip + .LCPI0_3]
@@ -269,52 +241,15 @@ p + div#issue-dump {
 </style>
 
 
-Compiled for Zen 4, we get ([Godbolt link](https://zig.godbolt.org/#z:OYLghAFBqd5QCxAYwPYBMCmBRdBLAF1QCcAaPECAMzwBtMA7AQwFtMQByARg9KtQYEAysib0QXACx8BBAKoBnTAAUAHpwAMvAFYgAzKVpMGoAF55gpJfWQE8Ayo3QBhVLQCuLBiEldSTgBk8BkwAOU8AI0xiEAA2UgAHVAVCewZXDy8fPySUuwEgkPCWKJj460xbNKECJmICDM9vXytMG3yGGrqCQrDI6LirWvrGrJaFYZ7gvpKB2IBKK1R3YmR2DjQGCYBqCfRtgFI9ABFtgAE8FiT6iAOAJju9%2B7v5o4AhA40AQU2diPc6HYGIcTudLtcCLcHv9AcFnq89B9vr8CNsmAolPUQac9gA6LD/YC49GYgjvT5fCko7ZCOQAcTp2CEABVsMcAPoANWwznZQgAkgAtbDY3YEdC4lIsCUKdzAYCYCacypEYgBRjAAgIABiJGcCXcEHcAA5SNsYbQgbjkAaEUifgIds4EO4GABrUVnZW2EgQWkMpmsjnc3kC4W4o7as0mu0UimYVQQ7ZUYE0BguBB1BT8zqYSHIF3ukDnb2qiB6O7R43zeZiiVsWq4nOQ3GulLAELoM1nAgATwSmBz/AgZ2Z/cwAHkqBAC663TXcQA3FUkXH0Bi1g4Adnt2z322pKRM9HZBbq7NQCQUooOAFY3uy78cTdu3tswBwAH4fs0f8C8d8OHeH9ALvN4QI/J8IKAvRtWgiBoPmaDX2Qrdjmg0gP0ONDyW%2BfcD1QK47DYbZFzqbZaFQVA3XcBJ2VqCJxBLFdiAgLh4m2GNPQUBIjEhDRYzw/dgloaZkxIbYICPYATzPYgLyvTct2cZBt2cCiqJouiGPoMDkEOO5Ym2DRVG1J9sOcI5Ti4EFLL0dSZxBbAjhFSRBK%2BfC0CIy5MFI8ikgAd2iBQLyodk7nZWj6NQdkuDuY1izA9inxNUVXSwNNMHQXCPOEhhRJCcTiEk%2B5YkC4LQvCyLtJiuLTWM3FcSU5wACoFEoggzTwNTdg63EWtFPAqEkvBbO2atznRI16q4Td7KOdTRraJRjJyilPMdVFaIHeSGDwCJGMVdl0XZCJCHZXJRUXK8XSoCIIHK4gQtQMKIqiohYvis1Z3dJyXPOHi%2BIgNz3I2rZUQUXsSjcdkWHRD0rNIhICEVSFtuidk9oO%2BgQpOs6CAu5IzWuhRbvuyjqPephDu%2Bwt51B/diDzFZgUh6HaFh%2BG1pw74KRTJGUYmCAmGLYxez7AczQiUWGHF8dazxBsmCbQQIFbLYLE7bsJcHBhh1Hccp2FqWF2XH1iDXRglPtT4AE4SWiSE8SlCU0FdAhmWIdxFRHJIElcd3hbm45EbOKaDYHI2mBN7tAaYSFZprbFQ51odUBHMdI%2BnaPzVNljLY3NbeY0W2mYIFnznx5x0UhIbJK85GfLrXFmTqBUCFxVRjViXEqEweOVkwIQ8wACSmi0rRtdxe/78umYUM1iUXVRbziiIAprOMS7tsOFAzw3s5jgHePjiABNrMAwER4WDKMiJXmL23lswLfbbtphk9BG/Stz9ztxD4uXx%2BYkzJhAHS7A0Syx1l1dMeA1gKBlnLActY64jhSKYSc04I6YIgMEfA8Ck7/TOOgnB2CjbgJrLWMh048FwMVLWZ%2B5xM44IodhXcwlhojmCK4bybAICEJ3OtfC%2B4yLFXnu4S0xZqG4NgQQtK6ZMCZWyoiIRwiiqSQ0I1M4%2BMhB4AwUbaRtCCG1gAPTjWat1ZSbDVFqP3NSPBCZBqyMVGBbqt4Q4qKErYxmioJFknvG404iNUEONUH9UEJljQCWMtsRh4DXEKLCfcW8kltGEF0forBzDyHU3oEnMx1Ynw5W8f/LeuU1FlwruIy0xT9ylMAfhVBxC9GkOyTQ5xChCF6BFM0zJ%2B8s5gNyZgSh1ivHCMqcQYEID3B3SkuKSUlwJRMwHKfXprSD4yPwfQxY2wKEwK2Z02pe56mUjGU0khBi2mDMOl0kU/pGQsjZFyHkfIhTYAjLBa2Nj8KiO2AkboCDDj3jWZcjZFDTE0npA8oMzzQxvI%2BWZdxXoWJ%2BihYGJ5IZXnhkjFWYOnEFFKKOcIkSYl%2BDFShGVAFZpNFNQsm1DqXUeqvm%2BbY9qqAO4DURtM2ZztFm4gTAQYgTBbDXPoF1bYA17nouDC8sM7ycWQoDI8mVcLsWfLNLy6U/LVCCuFbXDp4rJVouVbCrF8rYJmilSazFcqEWb08eU4RJzvETOBGkhoNcHoAoZscnmpzHXUgbAgDA15EYTC9rYUZjr8ICuiKmN1zxaC0EXCwTu3cl4rziriG6MzcQRFxKvO4zwRyll9LEaQnFqzdlLaxctuKqE1ogHWytPrhGxsmcmBNDwk0prTT3Jgy87jZtJrmiIxbkXm3LJWFt1aUUVnrcxSd86W1EpjTquNnbziJuTamruPcMRKD0MO26ebcR1XHY29iuLZ2TqvS2htKK70xiJaUh1NjXW7ACoQAsqSrngqjd4idZZm1cSsv9VBDdiK%2BTxK3Yg7c%2B0zwHkzYeBAx57wnsEa0BpENz0VIvAdma7jryTkGkNuIzjbt7XujNhbj2joLXFYt4D9l0M6bE2gK0zgNzoDgYgxBfTPGcMoOQuy255gosKt015ZQJCTGSpGI67qFvhKQFle4gO%2BmXaBk44HOGQabjBsTHdqN9yQ0PUe48ASWkw1PHDg8F7bAzS8WspH0AKHI5R3d6aCNDpzVQPNTGhksbkYwrjhEEg8ewHxgTDwhMieGO3CTyApO7G2iQVE8nuURDuLeWIKm1OLrLE%2BiaYHunbAg%2BFqDzdYPwZM7PQeKG0MQAwwwLD09TO4Yc5KDEmA9AkbzMGtzHnu07oQwe3rdH/P5vPQ8UVmBgv0PY5x7j9Aov8dYoJ4Tom4PiaMMl6TaWsSZb8xEGbLxVNjJjRx3ypWekrd4%2BtuZEoqAsA7vptgyhiDBEhM8HMZFRL7Dbp4RgqIdZ/IdvsIgCmyaJUEThW8zgGDPEXq%2BaRFD/41gu4619Ns0IcEWLQTgt5eDeG4LwVAnBBQWF2MsVYN27h6D0LwAgmh8eLAQP3LAMR%2BGkDdHEI9khcu2y4FuDQGhjS3geHcPwhOOCSF4CwCQYvSCk60KQCnHBeAII0KQFnHAtCLDgLAGAiAUDhZ42QCgM5zf0BiKYQVc4%2BCAmCpQaW%2BveBnWYMQXsnAeCkE93UXsE4IjaBVL73gXk2CCAnPlH37vSAEjlNXJNCCycJ8wHDY86w1f4CZlUZcqe1cJkqO4FG4fyCCDaKzww%2B0hXe9cFgavgrLjl%2BXMQCIyRMDHAz8YGSwRQDu8WFQIwwAFCcjwJgAKE4Byk79/wQQIgxDsCkDIQQigVDqHj7oSsRgTAgHMJYUSEQEGQEWJeDoqeAC0E5tgACU2j9yUNqGu2xL8JfE3u9k5bL8FXcGEy/LAU8VkpgDAbeTO6ubeX2WAJ%2BPOFQVQDgEATgow3gXAOugQ0wxQpQEgiQyQqQAgyBSuOBeQaQvQmBAwfgcBHQXQIwbgTQhBlB1QkwpB/QMQFBkwBBqBQw3QzBswrBiwCgtOaw%2BgBOROJO1eGu2wB%2BuyXsv0EAuAhAEk9wjO8wzOrOmOHOTAXOlAiwfOegPct4kgeg4udwtswukgW4Fhts8Qsu8upAiut4Ouqu5OnAWuIAOueuBupARupu92lulAvh%2B%2BDu7oTuloLuzW1eAe3u5ekRQeIeYeaekeIOMetAceOemAhIyeHG5eWAmeMk2evAueKoeABe1exeyApe6wfu32Ve8eR%2BdevYDe%2BRuuX2iuaebeHeSg3euRBUA%2Bnhw%2BTAo%2B4%2Bk%2B0%2BjA5e8%2Bwgog4gK%2B4x6%2Bag1eugMuve%2B%2BFgNex%2B8AZ%2BjcjonA1%2Bd%2BD%2B6ImAz%2BOwb%2BRm2wn%2B3%2Bv%2B/%2BgBBowBoB0QthqAkBeA0B6xrQ7QaQjg6YHBlY6BRQLBIAt4BguQeB6QtBWQcURBwJPBWBAJrxRRAg1BDQoJKBlYDB8JTBGBfxMJEw3QXxXB9QUJAwAJ/Bgh7AfWhgohKu4hnAkh1OQRHoch%2BAqoBkyhqhg%2B7OnOAwPONhCu/xjhVJmuVgbhuuahOh%2Bg%2BhhhxhphUgFhW4Vh5JHA4BTh6uLhwpbJ8pdwYh8eGurJBuiwbeKQDgkgQAA%3D)):
+Compiled for Zen 4, we get ([Godbolt link](https://zig.godbolt.org/#z:OYLghAFBqd5QCxAYwPYBMCmBRdBLAF1QCcAaPECAMzwBtMA7AQwFtMQByARg9KtQYEAysib0QXACx8BBAKoBnTAAUAHpwAMvAFYgAzKVpMGoAF55gpJfWQE8Ayo3QBhVLQCuLBhI0AmUk4AMngMmAByngBGmMQSBgAOqAqE9gyuHl4%2B/onJdgLBoREs0bFcBtaYtqlCBEzEBOme3lx%2BVpg2eQw1dQQF4VExcVa19Y2ZLf4KI70h/cWDZQCUVqjuxMjsHGgMUwDUU%2Bi7AKR6ACK7AAJ4LIn1EEe%2BvgcPvosnAEJHGgCC23uR7jodgYxzOl2utwI90eAKBIRebz0nx%2BfwIuyYCiU9VB5wOADosADgHiMViCB8vt9KajdkI5ABxenYIQAFWwpwA%2BgA1bDODlCACSAC1sDj9gR0HjkixJQp3MBgJgplzKkRiIFGMACAgAGIkZzxdwQdwADlIu1htGBeOQhsRyN%2BAj2zgQ7gYAGsxRcVbYSBA6YzmWzOTy%2BYKRXiTjrzab7ZTKZhVJDdlQQTQGC4EHUFAKupgochXR6QJcfWqIHp/LtY4txZK2LU8bmoXi3clgKF0OaLgQAJ7xTC5/gQC4s/uYADyVAghbd7sWizxADdVSQ8fQGLWjgB2B27fe7GnJEz0DmFuoc1DxBRio4AVneHPvp1NO/euzAHAAfp/zZ/wLwH4cB8v5Afe7ygZ%2Bz6QcBeg6jBEAwYsMFvih26nDBpCfsc6EUj8B6HqgNx2GwuxLnUuy0KgqDuu48QcrUkTiKWq7EBAXAAGwxiaW5ghcCjxEYUIaHG%2BEHiEtCzCmJC7BAx7AKe57EJe15btuzjIDuziUdRtH0Yx9Dgcgxy%2BBxuwaKoOrPjhzgnOcXCgrZejaTOoLYCcoqSKJ3wEWgxHXJgZEUYkADuMQKJeVAcr4HJ0QxqAclwvgmiW4Gcc%2Bppim6WDppg6B4T54kMJJoTScQskPBxoXhZF0WxfpCVJWa5l4nianOAAVAoVEEOaeBafsPV4h1Yp4FQsl4I5uw8ZcGLGs1XC8U52mTe0SjmZZVlIvGYn7jSdEDspDB4JETFKhyGIcpEhAcjkYpLterpUJEEDVcQEWoFFMVxUQiXJeas4em5HmXAJQkQF53m%2BU6aIKL2xRuByLAYp6dm7CEBDhaqV29pjHJZrQK4KMa8SHRyx2nfQEWXddBC3Uk5oPQoT0vVRNE/UwZ0A0W85QwexD5msIJwwjtBIyjBU7qcO3fKm6OCFjtg43jBNExATAlsYuPjuakSaww2sDrW%2BINkwTaCBArY7BYnbdn2A5DqgI5jgOU7q7rC7Lqx66MGpDpfAAnKSMRQvi0qSmgboECyxDuEqI6JPErhR%2BrvHS3xc2juObtMB73Zg0wUKLQuOJoz246O872fTrnFqeyuvrED7m6Sz8gcCwQQuXLTzgYlCY2yX58QkYF%2BIsnUioEHiqgmhxeJUJghdrJgQj5gAEnNlrWra7jz4vncCwo5okkuqh3klkQhQuO0B4HFyZy7k413noOCYXEAibWYBgGj6smWZkQ3htw0AHNamAb6ByYKXMEf9Kp128lLGWcsmYswgAZdg6IDb20wH1DMeANgKH1obTAtYB4jmSKYJ%2BVdXbThCPgAhJcQb8TwJQt2WcaFoM5vQBctZ2FULofgpUtYwGXEfm7dBftKQETIVcNIRFh4BQgIw3cUiCIHnIuVQ%2B7grQlj4W7ARDCsoZkwLlfK21dpqP4OVD%2BrULi0yECwqhejaF4IYbWAA9NNdq/V1I4T3GogJNI6GJlGq4pU4F%2Bp3nTv4gJBEtFWgidZNGZDgmqGBmCCyJoRLmV2CI9BETjFpIeHeWSdjCAONYdOZxnCzol08TxZ8BVYk4WlsAwqASO5d3ieScx7SWky2keNchji2FiJcfQoRvFRTMMqdQqhEjlExLUZ04gIIUHuGenJCUUpriSgFgOd%2BMynFjIgAYyZ5oJG4ImQoPm%2B5EFtMGaUihxzq41O4VM2kDImSsnZNyXk/JhTYEjHBSRFiCIaN2PEHohDjgPiOaM15CzdieIDN84MfywyAuBVZKJ3pWL%2Bi%2BUGX5oYAURijNxNO1ZjGmKabEiSUkrEVVMlC%2BoR8WptRsl1HqfUBpvlUc0/c3VUBTxGmjdZmyw67LxImAgxAmC2DeTg9GuwRqoqJSGf54YgXks%2BYGH5GrMVkpBeaSVMppWqFlfK/uYS2WTVVYS/VGLSXarguaNVjqSVauxdfXpzT7l9LiYLVZ3dCC9ymK9aFtz%2BkPIPDSBsCAMA3jRlMWOtg/H8rUTKmIaYQQXBeLQQmLBp6zxPmfJKeJHobLxJEPE59fAvBHGWP0HFpDVh4t2JtbEW0Ut4Z2iA3a21RoIlm4Ncs82PALUuItM855MFPr4CtzMq2RAbXixuFYqyxg7fiysPaWLrt3YO2lASR05suPmwtxa56YiUHoRdT1q14iaquvtnEKXbvXW%2Bwdvb8VftjMe/pvSM0rOFiFQghZSknKRXysFB413lgHbGaBooyFDxHnWPE49iCTyvXvJeAtV4EA3sTLeIQbSGjwwfJUx851lt8JfEu8bE14nHb4Sd06S20brfe5dtakoNvQVcwRNzcm0HWhcIedAcDEGIH6F4zhlByF2CMSelF5XuhvHKUmJA0SMvFZEOtCJSAZoIvBv0h6kN2RBqh%2BR6Gx4T3zLhhe%2BGV7r03oCK0ZGd6UeXmy0trxaxMfQAoFjF6p24dowuytVBq0Ca4Uqs5ImRESfkVJ7AMm5OPAU0plT%2BY1PIA0/sA6OmypkWi5EXwd4OJGZM3B19XFB3IfRkMtDAUMNYZwzOnzBG3MkY89vCjzmqN%2BZvZgPQjH8wJuC6Fidl6uujbvdFx9z7HiKqE4Y5Lkn6Dpdk2xeTinlMObREYArmnivYj0%2BVlbrxjOwf3CIqzehplbek7trZkoqAsCnq1tgyhiAY2hL4XM5FJKHAnp4RgaJsGQuDocIgZWl3PVSio3Cd5nAMBeMfN81SJFSwXLdvpiCgPoQ4MsWgnA7y8G8BwLQpBUCcCFBYfYqx1iBQeHoPQvACCaFJ8sBAi8sCxCUaQd0IAOJ3skFVgOXBtwaA0CaO8jxfBcEMJwSQvAWA%2BA0KQantP6ccF4IQ7X3Oaek9IHAWAMBEAoFS/QMgFAZy28GKYWVc4%2BBAnCpQPWpvSDXWYMQXsnAeC%2B5CHUXsE5IjaFVEH3gfk2CCAnMVQPPvCTyl7gWwh3BeBYGRieTYtP8ACyqETHnARVCVHcJjGP5AFbk595JSIcqA%2BuCwKX2V1xq8rmIJEJImBTiYFzwpEIoBTfLCoEYYACguR4EwCFCcA5qfB/4IIEQYh2BSBkIIRQKh1A%2B90P4IwJgQDmEsA3whkBlhXk6JngAtBOXYAAldoi8lA6j7rsG/uW0Qzo5C2m/JV3A0kb8WAd47JTAGAu9Oc6cu9/ssBz9hcKgqgHAIAnAxhmgAgMw%2BgigSgJBSAcgUgBA0DcD8DOgsCBhSg2gOhqhpgiCVdEDOhuh6gyD5gKCpgehaDhgehmCcDFoVg1gNh9AycKcqdS99ddgT9lNY4gYIBcBCAZJ2dxsuced8d%2BcmBBdKBlhRc9A547xJA9B5dfAA5pdJBtxTCA4uI691dSBNc7xtdddeB9dDcQBjdlDzcrcIAkAXt7dKAvDj9XcPR3crRPcIBvdac/cw9q9wiA8I8o9bBq849IdE9aBk8C9MAiR08xNq8c9jAFJ89s88Ai87AS8fdEwK8q8s8a9MY69acG8m9ewW88jSB29NcKiu8e8lB%2B9B8SoR8tAx8J8p8Z858F9q9l9hBRBxAN9Rjt81BS9dAVdD8zALBDATp4DL8FEnROA79H9n8MRMA389hP8jtdgf8/8ACgCQDDQwCICYgrDUAYC8A4D4Blh6DUhHAMwOCghZhsCFg8CkgCC5EMh0CSDUhuCfiXiBBGCGg3AmhcDwSuhphQTWCaDoTxhOCmCvjyCJBniWcBDxtVcOBKcddRDOBxCmd/DPQZD8A1QTIOdFglDR8%2BcBdBhhdLCNcQBbCiSfdHCrBnCmjlDND9AdC9CDCjCpBTDtxzD8SoD7C6dOB6TeihCOBfARCuS5S%2BSGTSAu9kgHBJAgA)):
 
 ```asm
 .LCPI0_3:
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   128
-        .byte   64
-        .byte   32
-        .byte   16
+        ...
 .LCPI0_4:
-        .byte   1
-        .byte   2
-        .byte   4
-        .byte   8
-        .byte   16
-        .byte   32
-        .byte   64
-        .byte   128
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
+        ...
 .LCPI0_5:
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   0
-        .byte   4
-        .byte   4
-        .byte   8
-        .byte   168
-        .byte   4
-        .byte   160
-        .byte   128
-        .byte   8
+        ...
 findCharsInSet:
         vgf2p8affineqb  ymm1, ymm0, qword ptr [rip + .LCPI0_3]{1to4}, 0
         vbroadcasti128  ymm2, xmmword ptr [rip + .LCPI0_4]
