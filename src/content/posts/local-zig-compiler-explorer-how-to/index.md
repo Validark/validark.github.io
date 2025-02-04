@@ -17,7 +17,7 @@ This article will walk through how to setup compiler explorer on a local machine
 
 # Prerequisites
 
-First, open a terminal with [Node.js](https://nodejs.org/en) and [Zig](https://ziglang.org/) installed. If done, skip to the [setup section of this article](http://localhost:4321/posts/local-zig-compiler-explorer-how-to/#setup).
+First, open a terminal with [Node.js](https://nodejs.org/en) and [Zig](https://ziglang.org/) installed. If done, skip to the [setup section of this article](#setup).
 
 If you are unsure whether you have [Node.js](https://nodejs.org/en), you can always check by pasting the following command into your terminal and hitting enter:
 
