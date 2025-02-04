@@ -114,7 +114,13 @@ Then navigate to the "Compilation" tab, untick "Use automatic delay before compi
 
 Now you can enjoy Compiler Explorer locally!
 
-In the "Compiler Options" field you might want to try different targets. To do so, add `-target <arch><sub>-<os>-<abi>` (ABI is optional). Examples:
+# Changing the Compiler Target
+
+In the "Compiler Options" field you might want to try different targets.
+
+![A screenshot showing the "Compiler Options" field](./compiler_options.png)
+
+The format is `-target <arch><sub>-<os>-<abi>` (ABI is optional). Examples:
 
 ```
 -target aarch64-macos
@@ -122,7 +128,12 @@ In the "Compiler Options" field you might want to try different targets. To do s
 -target riscv64-linux
 ```
 
-You can also add an `-mcpu=` flag and if you click the "Output" button at the bottom it will show you a list of options for a given architecture. I personally use `-target x86_64-linux -mcpu=znver5`. If you want to target an M-series MacBook, you could use `-target aarch64-macos -mcpu=apple_m3`.
+You can also add an `-mcpu=` flag and if you click the "Output" button at the bottom it will show you a list of options for a given architecture.
+
+![A screenshot showing how to enter "-mcpu=" in the right spot and clicking "Output"](./list_cpu_arches.png)
+
+
+I personally use `-target x86_64-linux -mcpu=znver5`. If you want to target an M-series MacBook, you could use `-target aarch64-macos -mcpu=apple_m3`.
 
 My `zig.sh` script automatically sets the compiler to use `-O ReleaseFast`. You can override this in the same "Compiler Options" field if you want. You could try `-O ReleaseSafe`, `-O ReleaseSmall`, or `-O Debug`. Note that, for some reason, source-mapping does not work with `ReleaseSmall`.
 
