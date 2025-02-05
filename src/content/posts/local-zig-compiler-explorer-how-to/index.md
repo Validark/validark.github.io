@@ -15,7 +15,7 @@ However, often times I prefer to use a local setup because it is faster and does
 
 This article will walk through how to setup compiler explorer on a local machine.
 
-# Prerequisites
+## Prerequisites
 
 First, open a terminal with [Node.js](https://nodejs.org/en) and [Zig](https://ziglang.org/) installed. If done, skip to the [setup section of this article](#setup).
 
@@ -53,7 +53,7 @@ source ~/.config/envman/PATH.env
 
 [Webi](https://webinstall.dev/webi/) also conveniently comes with a little helper script that will allow you to update or switch versions via `webi node@<tag>` (you can use `@lts` for long-term support, `@beta` for pre-releases, or `@x.y.z` for a specific version).
 
-# Setup
+## Setup
 
 Next, navigate in the terminal to the folder where you want the eventual "compiler-explorer" folder to live. I usually install GitHub stuff in `Documents/github`. So I would do:
 
@@ -86,7 +86,7 @@ curl -o zig.sh https://raw.githubusercontent.com/Validark/Zig-Compiler-Explorer-
 chmod +x zig.sh
 ```
 
-# Usage
+## Usage
 
 Now we can start the Compiler Explorer Server by simply running:
 
@@ -102,7 +102,7 @@ If everything worked properly, it should open on a local port you can open in yo
 
 For me, I can access it by navigating to http://localhost:10240/
 
-# Configuration
+## Configuration
 
 I recommend changing some of the default settings of Compiler Explorer. In your browser, click "More" and then "Settings".
 
@@ -114,7 +114,7 @@ Then navigate to the "Compilation" tab, untick "Use automatic delay before compi
 
 Now you can enjoy Compiler Explorer locally!
 
-# Changing the Compiler Target
+## Changing the Compiler Target
 
 In the "Compiler Options" field you might want to try different targets.
 
