@@ -79,7 +79,7 @@ You can re-run that command any time you want to pull the latest changes from Gi
 
 (I use `EXTRA_ARGS='--language zig'` here because I only care about the dependencies necessary for using Godbolt with the Zig compiler.)
 
-Next, we are going to download a little script I wrote (admittedly, with the help of AI) and name it `zig.sh`. Then we give it permission to be "executable":
+Next, we are going to download a little script I wrote (disclosure: AI wrote the first draft) and name it `zig.sh`. Then we give it permission to be "executable":
 
 ```sh
 curl -o zig.sh https://raw.githubusercontent.com/Validark/Zig-Compiler-Explorer-Shim/refs/heads/main/zig.sh
