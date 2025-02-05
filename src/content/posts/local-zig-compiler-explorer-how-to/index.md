@@ -1,5 +1,5 @@
 ---
-title: Local Compiler-Explorer Setup for Zig
+title: Local Compiler Explorer Setup for Zig
 published: 2025-02-04T14:00:00
 description: 'How to setup a local compiler explorer instance for Zig'
 image: ''
