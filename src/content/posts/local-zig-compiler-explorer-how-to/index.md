@@ -13,7 +13,7 @@ Compiler Explorer is known for its ability to automatically handle all the neces
 
 However, often times I prefer to use a local setup because it is faster and does not require sending a request to an external server to compile my code.
 
-This article will walk through how to setup compiler explorer on a local machine.
+This article will walk through how to set up Compiler Explorer on a local machine.
 
 ## Prerequisites
 
@@ -122,9 +122,11 @@ In the "Compiler Options" field you might want to try different targets.
 
 The format is `-target <arch><sub>-<os>-<abi>` (ABI is optional). Examples:
 
-```
+```sh
 -target aarch64-macos
+# OR
 -target x86_64-windows
+# OR
 -target riscv64-linux
 ```
 
@@ -135,7 +137,17 @@ You can also add an `-mcpu=` flag and if you click the "Output" button at the bo
 
 I personally use `-target x86_64-linux -mcpu=znver5`. If you want to target an M-series MacBook, you could use `-target aarch64-macos -mcpu=apple_m3`.
 
-My `zig.sh` script automatically sets the compiler to use `-O ReleaseFast`. You can override this in the same "Compiler Options" field if you want. You could try `-O ReleaseSafe`, `-O ReleaseSmall`, or `-O Debug`. Note that, for some reason, source-mapping does not work with `ReleaseSmall`.
+My `zig.sh` script automatically sets the compiler to use `-O ReleaseFast`. You can override this in the same "Compiler Options" field if you want. You could try:
+
+```sh
+-O ReleaseSafe
+# OR
+-O ReleaseSmall
+# OR
+-O Debug
+```
+
+Note that, for some reason, source-mapping does not work with `ReleaseSmall`.
 
 Have fun!
 
