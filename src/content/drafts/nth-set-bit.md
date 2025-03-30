@@ -835,7 +835,7 @@ const USE_POPCNT = switch (builtin.cpu.arch) {
 
 
 <!-- <script src="https://utteranc.es/client.js"
-        repo="validark/validark.github.io"
+        repo="validark/validark.dev"
         issue-term="title"
         label="comments section"
         theme="github-light"

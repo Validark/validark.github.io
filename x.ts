@@ -1,4 +1,4 @@
-fetch("https://validark.github.io/mask_even_odd_bits.html")
+fetch("https://validark.dev/mask_even_odd_bits.html")
 	.then(c => c.text())
 	.then(s => {
 		const [article] = document.getElementsByTagName("article");

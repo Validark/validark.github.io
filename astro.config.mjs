@@ -32,7 +32,7 @@ const oklchToHex = str => {
 // https://astro.build/config
 export default defineConfig({
   output: 'static',
-  site: 'https://validark.github.io/',
+  site: 'https://validark.dev/',
   trailingSlash: 'always',
   integrations: [
     tailwind(),
