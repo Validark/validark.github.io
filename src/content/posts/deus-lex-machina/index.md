@@ -1,7 +1,7 @@
 ---
 title: Deus Lex Machina
-published: 2025-03-11T09:35:00
-description: 'A simple technique for vectorized classification'
+published: 2025-04-16T06:00:00
+description: 'A new compaction-based tokenizer for the Zig programming language'
 image: ''
 tags: ['simd', 'tokenizer']
 category: ''
