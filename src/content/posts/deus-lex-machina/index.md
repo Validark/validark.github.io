@@ -36,7 +36,7 @@ Give it a star and come back!
 
 Please note it is not ready for prime-time just yet, since there are still more optimizations to be had, as well as support for more architectures. **At the moment, only AMD64 machines with AVX-512 instructions are supported.**
 
-That being said, the new implementation can tokenize up to **2.75x faster** than the mainline implementation, currently at **1.4GB/s** on my laptop, with a lot of improvements coming soon!
+That being said, the new implementation can tokenize up to **2.75x faster** than the mainline implementation, currently at **1.4GB/s** on a single core on my laptop, with a lot of improvements coming soon!
 
 ![Zero the Ziguana](src/assets/images/Zero_2.svg)
 
