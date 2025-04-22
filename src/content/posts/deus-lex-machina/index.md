@@ -32,7 +32,7 @@ Today, I am excited to announce the alpha release of a brand new compacting Zig 
 
 ::github{repo="Validark/Accelerated-Zig-Parser" license="MIT"}
 
-Give it a star and come back!
+If you want to help motivate me to keep working on this, give it a star and come back!
 
 Please note it is not ready for prime-time just yet, since there are still more optimizations to be had, as well as support for more architectures. **At the moment, only AMD64 machines with AVX-512 instructions are supported.**
 
