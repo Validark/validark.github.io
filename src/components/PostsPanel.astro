@@ -113,6 +113,18 @@ presentation_posts.push(
     slug: '',
     data: {
       body: '',
+      title: 'Introduction to Zig v0.14 (and Andrew Kelley\'s lightning talk on DoD)',
+      published: new Date(2025, 3, 10),
+      description:
+        'A slower intro to 0.14 concepts and a little data-oriented design',
+      tags: ['data-oriented design'],
+      customURL: 'https://www.youtube.com/live/Cew2YEIcOQg',
+    },
+  },
+  {
+    slug: '',
+    data: {
+      body: '',
       title: 'Intro to SIMD',
       published: new Date(2024, 11, 12),
       description:
@@ -212,7 +224,7 @@ function formatTag(tag: string[]) {
         groups.map(group => (
             <div>
                 {group.groupBy && <div class="flex flex-row w-full items-center h-[3.75rem]">
-                    <div class="w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75">{group.groupBy}</div>
+                    <div class="w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75 md:mt-[1rem] xs:mt-[3rem] xxxs:mt-[6rem]">{group.groupBy}</div>
                     {/* <div class="w-[15%] md:w-[2%]"> */}
                         {/* <div class="h-3 w-3 bg-none rounded-full outline outline-[var(--primary)] mx-auto -outline-offset-[2px] z-50 outline-3"></div> */}
                     {/* </div> */}

@@ -78,11 +78,11 @@ export const profileConfig: ProfileConfig = {
     //                                     // `pnpm add @iconify-json/<icon-set-name>`
     //   url: 'https://twitter.com',
     // },
-    // {
-    //   name: 'Posts',
-    //   icon: 'fa6-brands:readme',
-    //   url: '/posts/',
-    // },
+    {
+      name: 'Validark@pm.me',
+      icon: 'material-symbols:contact-mail',
+      url: 'mailto:Validark@pm.me',
+    },
     // {
     //   name: 'GitHub',
     //   icon: 'fa6-brands:github',
